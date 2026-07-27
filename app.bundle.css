@@ -2466,7 +2466,7 @@ body {
 }
 
 
-/* ===== DriveCost v3.1.0 — Real Drive ===== */
+/* ===== DriveCost v3.1.1 — Real Drive foundation ===== */
 
 .calculation-mode-shell{
   display:grid;
@@ -2859,4 +2859,182 @@ body {
   .result-breakdown-row>b{
     text-align:right
   }
+}
+
+
+/* ===== DriveCost v3.1.1 — Trip Planner ===== */
+
+.trip-method-switch{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  margin-bottom:12px
+}
+.trip-method-switch label{
+  position:relative;
+  display:block;
+  cursor:pointer
+}
+.trip-method-switch input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none
+}
+.trip-method-switch label>span{
+  display:grid;
+  gap:3px;
+  min-height:58px;
+  padding:11px 13px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(6,20,32,.58);
+  transition:border-color .16s,background .16s,box-shadow .16s
+}
+.trip-method-switch strong{
+  color:#d6e5ef;
+  font-size:10px
+}
+.trip-method-switch small{
+  color:var(--muted);
+  font-size:8px;
+  line-height:1.45
+}
+.trip-method-switch input:checked+span{
+  border-color:rgba(19,214,187,.54);
+  background:linear-gradient(135deg,rgba(19,214,187,.12),rgba(47,143,255,.055));
+  box-shadow:inset 0 0 0 1px rgba(19,214,187,.07)
+}
+.trip-method-switch input:focus-visible+span{
+  outline:2px solid rgba(19,214,187,.65);
+  outline-offset:2px
+}
+.trip-input-panel[hidden]{
+  display:none!important
+}
+.trip-round-toggle{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:44px;
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:rgba(5,17,28,.62);
+  cursor:pointer
+}
+.trip-round-toggle input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none
+}
+.trip-toggle-track{
+  position:relative;
+  width:42px;
+  height:24px;
+  border-radius:999px;
+  background:#183247;
+  transition:background .18s
+}
+.trip-toggle-track i{
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  background:#d8e7f1;
+  transition:transform .18s
+}
+.trip-round-toggle input:checked+.trip-toggle-track{
+  background:linear-gradient(90deg,var(--teal-2),var(--teal))
+}
+.trip-round-toggle input:checked+.trip-toggle-track i{
+  transform:translateX(18px);
+  background:#fff
+}
+.trip-round-toggle input:focus-visible+.trip-toggle-track{
+  outline:2px solid rgba(19,214,187,.65);
+  outline-offset:2px
+}
+.trip-round-toggle b{
+  color:#c9d9e4;
+  font-size:9px
+}
+.trip-equation-preview{
+  margin-top:8px;
+  padding:8px 10px;
+  border:1px dashed rgba(19,214,187,.24);
+  border-radius:9px;
+  color:#9cded5;
+  background:rgba(19,214,187,.045);
+  font-size:8px;
+  text-align:center
+}
+.elevation-summary{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px
+}
+.elevation-summary>div{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:rgba(6,20,32,.55)
+}
+.elevation-summary span{
+  color:var(--muted);
+  font-size:8px
+}
+.elevation-summary strong{
+  color:var(--teal);
+  font-size:10px
+}
+.elevation-summary p{
+  grid-column:1/-1;
+  margin:0;
+  padding:8px 10px;
+  border-radius:9px;
+  color:#8fa8b9;
+  background:rgba(47,143,255,.045);
+  font-size:8px;
+  text-align:center
+}
+
+@media(max-width:760px){
+  .trip-method-switch{
+    grid-template-columns:1fr
+  }
+  .elevation-summary{
+    grid-template-columns:1fr
+  }
+  .elevation-summary p{
+    grid-column:auto
+  }
+}
+
+
+/* Closed utility drawers must not widen mobile document bounds. */
+.utility-panel:not(.open){
+  display:none!important
+}
+.utility-panel.open{
+  display:flex!important
+}
+
+
+.trip-method-switch input,
+.trip-round-toggle input{
+  width:1px!important;
+  height:1px!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden;
+  clip-path:inset(50%);
+  white-space:nowrap
 }

@@ -7,7 +7,9 @@ const {
   calculateActual,
   calculateEstimate,
   calculateMountain,
-  buildDriverProfile
+  buildDriverProfile,
+  resolveTripDistance,
+  resolveElevation
 } = require("../drive-engine");
 
 test("actual fill keeps the paid amount unchanged", () => {
@@ -139,4 +141,132 @@ test("driver profile uses median of valid full-tank calibrations", () => {
   assert.equal(profile.available, true);
   assert.equal(profile.factor, 1.1);
   assert.equal(profile.sampleCount, 3);
+});
+
+
+test("trip planner calculates one round trip exactly once", () => {
+  const trip = resolveTripDistance({
+    method: "leg",
+    oneWayDistance: 150,
+    roundTrip: true,
+    tripCount: 1
+  });
+
+  assert.equal(trip.totalDistance, 300);
+  assert.equal(trip.multiplier, 2);
+  assert.equal(trip.expression, "150 × 2 × 1");
+});
+
+test("trip planner supports repeated one-way trips", () => {
+  const trip = resolveTripDistance({
+    method: "leg",
+    oneWayDistance: 150,
+    roundTrip: false,
+    tripCount: 2
+  });
+
+  assert.equal(trip.totalDistance, 300);
+  assert.equal(trip.multiplier, 2);
+});
+
+test("direct total distance is never multiplied again", () => {
+  const trip = resolveTripDistance({
+    method: "direct",
+    directDistance: 300,
+    oneWayDistance: 150,
+    roundTrip: true,
+    tripCount: 9
+  });
+
+  assert.equal(trip.totalDistance, 300);
+  assert.equal(trip.multiplier, 1);
+});
+
+test("estimate uses resolved trip distance", () => {
+  const result = calculateEstimate({
+    mode: "fuel",
+    trip: {
+      method: "leg",
+      oneWayDistance: 150,
+      roundTrip: true,
+      tripCount: 1
+    },
+    efficiency: 15,
+    price: 31.69,
+    driverFactor: 1
+  });
+
+  assert.equal(result.totalDistance, 300);
+  assert.equal(result.energyUse, 20);
+  assert.equal(result.total, 633.8);
+  assert.equal(result.trip.method, "leg");
+});
+
+test("per-leg elevation follows the trip multiplier", () => {
+  const trip = resolveTripDistance({
+    method: "leg",
+    oneWayDistance: 150,
+    roundTrip: true,
+    tripCount: 1
+  });
+
+  const elevation = resolveElevation({
+    scope: "per_leg",
+    ascent: 600,
+    descent: 600
+  }, trip);
+
+  assert.equal(elevation.ascent, 1200);
+  assert.equal(elevation.descent, 1200);
+  assert.equal(elevation.multiplier, 2);
+});
+
+test("whole-trip elevation is not multiplied", () => {
+  const trip = resolveTripDistance({
+    method: "leg",
+    oneWayDistance: 150,
+    roundTrip: true,
+    tripCount: 3
+  });
+
+  const elevation = resolveElevation({
+    scope: "whole_trip",
+    ascent: 1200,
+    descent: 900
+  }, trip);
+
+  assert.equal(elevation.ascent, 1200);
+  assert.equal(elevation.descent, 900);
+  assert.equal(elevation.multiplier, 1);
+});
+
+test("mountain calculation uses resolved trip and elevation totals", () => {
+  const result = calculateMountain({
+    mode: "fuel",
+    trip: {
+      method: "leg",
+      oneWayDistance: 150,
+      roundTrip: true,
+      tripCount: 1
+    },
+    elevation: {
+      scope: "per_leg",
+      ascent: 600,
+      descent: 600
+    },
+    efficiency: 10,
+    price: 31.69,
+    vehicleMass: 1750,
+    payloadMass: 150,
+    maxGrade: 10,
+    driverFactor: 1,
+    trafficPct: 0,
+    acPct: 0,
+    roadPct: 0
+  });
+
+  assert.equal(result.totalDistance, 300);
+  assert.equal(result.elevation.ascent, 1200);
+  assert.equal(result.elevation.descent, 1200);
+  assert.ok(result.total > 950.7);
 });

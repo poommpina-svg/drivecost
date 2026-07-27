@@ -83,8 +83,10 @@
     "actualSource1Cost", "actualSource2Type", "actualSource2Quantity",
     "actualSource2Cost", "actualSource3Type", "actualSource3Quantity",
     "actualSource3Cost", "actualFillMethod", "actualRecordNote",
-    "estimateDistance", "estimateDriverPreset", "estimateDriverCustom",
-    "mountainDistance", "mountainAscent", "mountainDescent",
+    "estimateDistance", "estimateOneWayDistance", "estimateRoundTrip",
+    "estimateTripCount", "estimateDriverPreset", "estimateDriverCustom",
+    "mountainDistance", "mountainOneWayDistance", "mountainRoundTrip",
+    "mountainTripCount", "mountainElevationScope", "mountainAscent", "mountainDescent",
     "mountainVehicleMass", "mountainPayload", "mountainMaxGrade",
     "mountainDriverPreset", "mountainDriverCustom", "mountainTraffic",
     "mountainAc", "mountainRoad"
@@ -182,6 +184,87 @@
     if ($("directDistanceField")) $("directDistanceField").hidden = !direct;
     if ($("actualDistanceOutput")) $("actualDistanceOutput").textContent = fmt(distance, 1);
     return distance;
+  }
+
+
+  function selectedTripMethod(prefix) {
+    return document.querySelector(
+      `input[name="${prefix}DistanceMethod"]:checked`
+    )?.value === "direct"
+      ? "direct"
+      : "leg";
+  }
+
+  function setTripMethod(prefix, method) {
+    const safeMethod = method === "direct" ? "direct" : "leg";
+    document.querySelectorAll(
+      `input[name="${prefix}DistanceMethod"]`
+    ).forEach(radio => {
+      radio.checked = radio.value === safeMethod;
+    });
+  }
+
+  function tripPlan(prefix) {
+    return engine.resolveTripDistance({
+      method: selectedTripMethod(prefix),
+      directDistance: number(`${prefix}Distance`),
+      oneWayDistance: number(`${prefix}OneWayDistance`),
+      roundTrip: Boolean($(`${prefix}RoundTrip`)?.checked),
+      tripCount: number(`${prefix}TripCount`, 1)
+    });
+  }
+
+  function updateMountainElevation(trip = tripPlan("mountain")) {
+    const elevation = engine.resolveElevation({
+      scope: $("mountainElevationScope")?.value || "whole_trip",
+      ascent: number("mountainAscent"),
+      descent: number("mountainDescent")
+    }, trip);
+
+    if ($("mountainAscentOutput")) {
+      $("mountainAscentOutput").textContent = `${fmt(elevation.ascent, 0)} ม.`;
+    }
+    if ($("mountainDescentOutput")) {
+      $("mountainDescentOutput").textContent = `${fmt(elevation.descent, 0)} ม.`;
+    }
+    if ($("mountainElevationEquation")) {
+      $("mountainElevationEquation").textContent =
+        elevation.scope === "per_leg" && trip.method === "leg"
+          ? `${fmt(elevation.ascentInput, 0)} × ${elevation.multiplier} = ${fmt(elevation.ascent, 0)} ม. ขึ้น • ${fmt(elevation.descentInput, 0)} × ${elevation.multiplier} = ${fmt(elevation.descent, 0)} ม. ลง`
+          : `ใช้ค่ารวมทั้งทริปโดยตรง: ขึ้น ${fmt(elevation.ascent, 0)} ม. • ลง ${fmt(elevation.descent, 0)} ม.`;
+    }
+
+    return elevation;
+  }
+
+  function updateTripPlanner(prefix) {
+    const trip = tripPlan(prefix);
+    const legPanel = $(`${prefix}LegDistancePanel`);
+    const directPanel = $(`${prefix}DirectDistancePanel`);
+    const isDirect = trip.method === "direct";
+
+    if (legPanel) legPanel.hidden = isDirect;
+    if (directPanel) directPanel.hidden = !isDirect;
+
+    if ($(`${prefix}DistanceOutput`)) {
+      $(`${prefix}DistanceOutput`).textContent = fmt(trip.totalDistance, 1);
+    }
+    if ($(`${prefix}DirectOutput`)) {
+      $(`${prefix}DirectOutput`).textContent = fmt(trip.totalDistance, 1);
+    }
+    if ($(`${prefix}TripEquation`)) {
+      $(`${prefix}TripEquation`).textContent = trip.method === "leg"
+        ? `${fmt(trip.oneWayDistance, 1)} × ${trip.directionMultiplier} × ${trip.tripCount} = ${fmt(trip.totalDistance, 1)} กม.`
+        : `${fmt(trip.totalDistance, 1)} กม. รวมทั้งทริป`;
+    }
+    if ($(`${prefix}RoundTripText`)) {
+      $(`${prefix}RoundTripText`).textContent = trip.roundTrip
+        ? "ไป–กลับ"
+        : "เที่ยวเดียว";
+    }
+
+    if (prefix === "mountain") updateMountainElevation(trip);
+    return trip;
   }
 
   function renderDriverProfile() {
@@ -393,9 +476,11 @@
   }
 
   function gatherEstimate() {
+    const trip = updateTripPlanner("estimate");
     return {
       mode,
-      distance: number("estimateDistance"),
+      trip,
+      distance: trip.totalDistance,
       efficiency: number("efficiency", energyData[mode].eff),
       price: number("energyPrice", energyData[mode].price),
       driverFactor: driverFactor("estimateDriverPreset", "estimateDriverCustom")
@@ -403,15 +488,20 @@
   }
 
   function gatherMountain() {
+    const trip = updateTripPlanner("mountain");
+    const elevation = updateMountainElevation(trip);
+
     return {
       mode,
-      distance: number("mountainDistance"),
+      trip,
+      distance: trip.totalDistance,
+      elevation,
       efficiency: number("efficiency", energyData[mode].eff),
       price: number("energyPrice", energyData[mode].price),
       vehicleMass: number("mountainVehicleMass", vehicleData[vehicle].mass),
       payloadMass: number("mountainPayload"),
-      ascent: number("mountainAscent"),
-      descent: number("mountainDescent"),
+      ascent: elevation.ascent,
+      descent: elevation.descent,
       maxGrade: number("mountainMaxGrade"),
       driverFactor: driverFactor("mountainDriverPreset", "mountainDriverCustom"),
       trafficPct: number("mountainTraffic"),
@@ -607,7 +697,9 @@
       calculationMode,
       mode,
       vehicle,
-      energyType: $("energyType")?.value || ""
+      energyType: $("energyType")?.value || "",
+      estimateDistanceMethod: selectedTripMethod("estimate"),
+      mountainDistanceMethod: selectedTripMethod("mountain")
     };
 
     inputIds.forEach(id => {
@@ -630,6 +722,16 @@
       $("energyType").value = data.energyType;
     }
 
+    setTripMethod(
+      "estimate",
+      data.estimateDistanceMethod ||
+        (data.calculationMode === undefined ? "direct" : "leg")
+    );
+    setTripMethod(
+      "mountain",
+      data.mountainDistanceMethod || "leg"
+    );
+
     inputIds.forEach(id => {
       const element = $(id);
       if (!element || data[id] === undefined) return;
@@ -640,11 +742,14 @@
     if (data.calculationMode === undefined) {
       const legacyDistance = Math.max(0, Number(data.totalDistanceInput || data.distance) || 0);
       if ($("estimateDistance")) $("estimateDistance").value = legacyDistance || 300;
+      setTripMethod("estimate", "direct");
       setCalculationMode("estimate");
     }
 
     updateSourceUnits();
     updateActualDistance();
+    updateTripPlanner("estimate");
+    updateTripPlanner("mountain");
     renderDriverProfile();
     calculate();
   }
@@ -710,7 +815,7 @@
   function exportCSV() {
     const result = calculate();
     const rows = [
-      ["DriveCost v3.1.0", result.calculationLabel],
+      ["DriveCost v3.1.1", result.calculationLabel],
       ["รายการ", "ค่า"],
       ...result.inputs,
       ...result.breakdown.map(item => [
@@ -758,6 +863,17 @@
     button.addEventListener("click", () => setMode(button.dataset.mode));
   });
 
+  ["estimate", "mountain"].forEach(prefix => {
+    document.querySelectorAll(
+      `input[name="${prefix}DistanceMethod"]`
+    ).forEach(radio => {
+      radio.addEventListener("change", () => {
+        updateTripPlanner(prefix);
+        calculate();
+      });
+    });
+  });
+
   inputIds.forEach(id => {
     const element = $(id);
     if (!element) return;
@@ -765,6 +881,8 @@
       element.addEventListener(eventName, () => {
         if (id === "actualUseDirectDistance") updateActualDistance();
         if (/actualSource[123]Type/.test(id)) updateSourceUnits();
+        if (id.startsWith("estimate")) updateTripPlanner("estimate");
+        if (id.startsWith("mountain")) updateTripPlanner("mountain");
         calculate();
       });
     });
@@ -803,6 +921,8 @@
     setMode,
     setVehicle,
     setCalculationMode,
+    updateTripPlanner,
+    tripPlan,
     calculate,
     snapshot,
     applyData,
@@ -821,6 +941,8 @@
   setCalculationMode("actual");
   updateSourceUnits();
   updateActualDistance();
+  updateTripPlanner("estimate");
+  updateTripPlanner("mountain");
   renderActualRecords();
   renderDriverProfile();
   calculate();

@@ -306,7 +306,7 @@ async function requestPttSoap(operation, language) {
       headers: {
         "Content-Type": "text/xml; charset=utf-8",
         "SOAPAction": `"https://orapiweb.pttor.com/${operation}"`,
-        "User-Agent": "DriveCost/3.1.0 (+Render production)"
+        "User-Agent": "DriveCost/3.1.1 (+Render production)"
       },
       body: soapRequestBody(operation, language),
       signal: controller.signal

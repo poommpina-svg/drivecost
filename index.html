@@ -1,18 +1,18 @@
 <!doctype html>
 <html lang="th">
 <head>
-<script src="/storage-scope.js?v=3.1.0"></script>
+<script src="/storage-scope.js?v=3.1.1"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#06111d">
   <meta name="description" content="DriveCost - คำนวณค่าเชื้อเพลิงจริงและเส้นทางสำหรับรถน้ำมัน ก๊าซ ไฮบริด EV และรถดัดแปลง">
-  <link rel="manifest" href="/manifest.json?v=3.1.0">
+  <link rel="manifest" href="/manifest.json?v=3.1.1">
 <meta name="application-name" content="DriveCost">
 <meta name="description" content="คำนวณค่าเดินทางและจัดเก็บข้อมูลแยกตามบัญชีอย่างปลอดภัย">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="/">
-  <title>DriveCost v3.1.0</title>
-  <link rel="stylesheet" href="/app.bundle.css?v=3.1.0">
+  <title>DriveCost v3.1.1</title>
+  <link rel="stylesheet" href="/app.bundle.css?v=3.1.1">
   
   
   
@@ -20,7 +20,7 @@
   
 
 
-<script src="/production-bootstrap.js?v=3.1.0"></script>
+<script src="/production-bootstrap.js?v=3.1.1"></script>
 
 
 
@@ -52,7 +52,7 @@
     <span class="sidebar-status-dot" aria-hidden="true"></span>
     <span>ข้อมูลเก็บในอุปกรณ์นี้</span>
   </div>
-  <div class="version">DriveCost v3.1.0</div>
+  <div class="version">DriveCost v3.1.1</div>
   </aside>
 
   <main class="content">
@@ -325,12 +325,63 @@
 
         <div class="calculation-mode-panel" data-mode-panel="estimate" role="tabpanel" hidden>
           <div class="section">
-            <div class="section-head"><div class="step">1</div><h2>ระยะทางและพฤติกรรมผู้ขับ</h2></div>
-            <div class="grid3">
-              <div class="field">
-                <label for="estimateDistance">ระยะทางรวมที่วางแผน</label>
-                <div class="field-box"><input id="estimateDistance" type="number" min="0" step=".1" value="300"><span class="unit">กม.</span></div>
+            <div class="section-head"><div class="step">1</div><h2>รูปแบบและระยะทางเดินทาง</h2></div>
+
+            <div class="trip-method-switch">
+              <label>
+                <input type="radio" name="estimateDistanceMethod" value="leg" checked>
+                <span><strong>ระยะทางต่อเที่ยว</strong><small>ระบบคำนวณไป–กลับและจำนวนเที่ยวให้</small></span>
+              </label>
+              <label>
+                <input type="radio" name="estimateDistanceMethod" value="direct">
+                <span><strong>ระยะทางรวม</strong><small>กรอกยอดรวมทั้งทริปเพียงครั้งเดียว</small></span>
+              </label>
+            </div>
+
+            <div class="trip-input-panel" id="estimateLegDistancePanel">
+              <div class="grid4">
+                <div class="field">
+                  <label for="estimateOneWayDistance">ระยะทางต่อเที่ยว</label>
+                  <div class="field-box"><input id="estimateOneWayDistance" type="number" min="0" step=".1" value="150"><span class="unit">กม.</span></div>
+                </div>
+                <div class="field">
+                  <label>ไป–กลับ</label>
+                  <label class="trip-round-toggle">
+                    <input id="estimateRoundTrip" type="checkbox" checked>
+                    <span class="trip-toggle-track"><i></i></span>
+                    <b id="estimateRoundTripText">ไป–กลับ</b>
+                  </label>
+                </div>
+                <div class="field">
+                  <label for="estimateTripCount">จำนวนชุดการเดินทาง</label>
+                  <div class="field-box"><input id="estimateTripCount" type="number" min="1" max="999" step="1" value="1"><span class="unit">ชุด</span></div>
+                </div>
+                <div class="field calculated-field">
+                  <label>ระยะทางรวมที่ใช้คำนวณ</label>
+                  <div class="field-box readonly-box"><output id="estimateDistanceOutput">300.0</output><span class="unit">กม.</span></div>
+                </div>
               </div>
+              <div class="trip-equation-preview" id="estimateTripEquation">150 × 2 × 1 = 300 กม.</div>
+            </div>
+
+            <div class="trip-input-panel" id="estimateDirectDistancePanel" hidden>
+              <div class="grid2">
+                <div class="field">
+                  <label for="estimateDistance">ระยะทางรวมทั้งทริป</label>
+                  <div class="field-box"><input id="estimateDistance" type="number" min="0" step=".1" value="300"><span class="unit">กม.</span></div>
+                </div>
+                <div class="field calculated-field">
+                  <label>ระยะทางรวมที่ใช้คำนวณ</label>
+                  <div class="field-box readonly-box"><output id="estimateDirectOutput">300.0</output><span class="unit">กม.</span></div>
+                </div>
+              </div>
+              <div class="trip-equation-preview">ใช้ระยะทางรวมโดยตรง ไม่คูณซ้ำ</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head"><div class="step">2</div><h2>พฤติกรรมผู้ขับ</h2></div>
+            <div class="grid2">
               <div class="field">
                 <label for="estimateDriverPreset">พฤติกรรมผู้ขับ</label>
                 <div class="field-box">
@@ -356,28 +407,95 @@
 
         <div class="calculation-mode-panel" data-mode-panel="mountain" role="tabpanel" hidden>
           <div class="section">
-            <div class="section-head"><div class="step">1</div><h2>ระยะทางและระดับความสูง</h2></div>
-            <div class="grid3">
-              <div class="field">
-                <label for="mountainDistance">ระยะทางรวม</label>
-                <div class="field-box"><input id="mountainDistance" type="number" min="0" step=".1" value="300"><span class="unit">กม.</span></div>
-              </div>
-              <div class="field">
-                <label for="mountainAscent">ความสูงสะสมขาขึ้น</label>
-                <div class="field-box"><input id="mountainAscent" type="number" min="0" step="1" value="1200"><span class="unit">ม.</span></div>
-              </div>
-              <div class="field">
-                <label for="mountainDescent">ความสูงสะสมขาลง</label>
-                <div class="field-box"><input id="mountainDescent" type="number" min="0" step="1" value="1200"><span class="unit">ม.</span></div>
-              </div>
+            <div class="section-head"><div class="step">1</div><h2>รูปแบบและระยะทางเดินทาง</h2></div>
+
+            <div class="trip-method-switch">
+              <label>
+                <input type="radio" name="mountainDistanceMethod" value="leg" checked>
+                <span><strong>ระยะทางต่อเที่ยว</strong><small>เหมาะกับเส้นทางไป–กลับ</small></span>
+              </label>
+              <label>
+                <input type="radio" name="mountainDistanceMethod" value="direct">
+                <span><strong>ระยะทางรวม</strong><small>กรอกยอดรวมจากแผนที่โดยตรง</small></span>
+              </label>
             </div>
-            <div class="mountain-elevation-note">
-              ใช้ “ความสูงสะสม” จากแอปแผนที่หรือไฟล์เส้นทาง ไม่ใช่เพียงความสูงปลายทาง
+
+            <div class="trip-input-panel" id="mountainLegDistancePanel">
+              <div class="grid4">
+                <div class="field">
+                  <label for="mountainOneWayDistance">ระยะทางต่อเที่ยว</label>
+                  <div class="field-box"><input id="mountainOneWayDistance" type="number" min="0" step=".1" value="150"><span class="unit">กม.</span></div>
+                </div>
+                <div class="field">
+                  <label>ไป–กลับ</label>
+                  <label class="trip-round-toggle">
+                    <input id="mountainRoundTrip" type="checkbox" checked>
+                    <span class="trip-toggle-track"><i></i></span>
+                    <b id="mountainRoundTripText">ไป–กลับ</b>
+                  </label>
+                </div>
+                <div class="field">
+                  <label for="mountainTripCount">จำนวนชุดการเดินทาง</label>
+                  <div class="field-box"><input id="mountainTripCount" type="number" min="1" max="999" step="1" value="1"><span class="unit">ชุด</span></div>
+                </div>
+                <div class="field calculated-field">
+                  <label>ระยะทางรวมที่ใช้คำนวณ</label>
+                  <div class="field-box readonly-box"><output id="mountainDistanceOutput">300.0</output><span class="unit">กม.</span></div>
+                </div>
+              </div>
+              <div class="trip-equation-preview" id="mountainTripEquation">150 × 2 × 1 = 300 กม.</div>
+            </div>
+
+            <div class="trip-input-panel" id="mountainDirectDistancePanel" hidden>
+              <div class="grid2">
+                <div class="field">
+                  <label for="mountainDistance">ระยะทางรวมทั้งทริป</label>
+                  <div class="field-box"><input id="mountainDistance" type="number" min="0" step=".1" value="300"><span class="unit">กม.</span></div>
+                </div>
+                <div class="field calculated-field">
+                  <label>ระยะทางรวมที่ใช้คำนวณ</label>
+                  <div class="field-box readonly-box"><output id="mountainDirectOutput">300.0</output><span class="unit">กม.</span></div>
+                </div>
+              </div>
+              <div class="trip-equation-preview">ใช้ระยะทางรวมโดยตรง ไม่คูณซ้ำ</div>
             </div>
           </div>
 
           <div class="section">
-            <div class="section-head"><div class="step">2</div><h2>น้ำหนักและความยากของเส้นทาง</h2></div>
+            <div class="section-head"><div class="step">2</div><h2>ระดับความสูงสะสม</h2></div>
+            <div class="grid3">
+              <div class="field">
+                <label for="mountainElevationScope">ค่าความสูงที่กรอกเป็น</label>
+                <div class="field-box">
+                  <select id="mountainElevationScope">
+                    <option value="per_leg">ต่อเที่ยว</option>
+                    <option value="whole_trip">รวมทั้งทริป</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="mountainAscent">ความสูงสะสมขาขึ้น</label>
+                <div class="field-box"><input id="mountainAscent" type="number" min="0" step="1" value="600"><span class="unit">ม.</span></div>
+              </div>
+              <div class="field">
+                <label for="mountainDescent">ความสูงสะสมขาลง</label>
+                <div class="field-box"><input id="mountainDescent" type="number" min="0" step="1" value="600"><span class="unit">ม.</span></div>
+              </div>
+            </div>
+
+            <div class="elevation-summary">
+              <div><span>ขาขึ้นรวมที่ใช้คำนวณ</span><strong id="mountainAscentOutput">1,200 ม.</strong></div>
+              <div><span>ขาลงรวมที่ใช้คำนวณ</span><strong id="mountainDescentOutput">1,200 ม.</strong></div>
+              <p id="mountainElevationEquation">600 × 2 = 1,200 ม. ต่อทิศทาง</p>
+            </div>
+
+            <div class="mountain-elevation-note">
+              ใช้ “ความสูงสะสม” จากแอปแผนที่ ไม่ใช่เพียงความสูงจุดหมาย ระบบจะคูณตามไป–กลับเฉพาะเมื่อเลือก “ต่อเที่ยว”
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head"><div class="step">3</div><h2>น้ำหนักและความยากของเส้นทาง</h2></div>
             <div class="grid3">
               <div class="field">
                 <label for="mountainVehicleMass">น้ำหนักรถพร้อมใช้งาน</label>
@@ -395,7 +513,7 @@
           </div>
 
           <div class="section">
-            <div class="section-head"><div class="step">3</div><h2>สภาพการใช้งาน</h2></div>
+            <div class="section-head"><div class="step">4</div><h2>สภาพการใช้งาน</h2></div>
             <div class="grid3">
               <div class="field">
                 <label for="mountainDriverPreset">พฤติกรรมผู้ขับ</label>
@@ -1082,18 +1200,18 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="/drive-engine.js?v=3.1.0"></script>
-<script src="/core-app.js?v=3.1.0"></script>
+<script src="/drive-engine.js?v=3.1.1"></script>
+<script src="/core-app.js?v=3.1.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="/runtime-config.js"></script>
-<script src="/supabase-config.js?v=3.1.0"></script>
-<script src="/account-sync.js?v=3.1.0"></script>
-<script src="/app-v2.js?v=3.1.0"></script>
-<script src="/accessibility-status.js?v=3.1.0"></script>
-<script src="/provenance-calculation.js?v=3.1.0"></script>
-<script src="/live-prices.js?v=3.1.0"></script>
+<script src="/supabase-config.js?v=3.1.1"></script>
+<script src="/account-sync.js?v=3.1.1"></script>
+<script src="/app-v2.js?v=3.1.1"></script>
+<script src="/accessibility-status.js?v=3.1.1"></script>
+<script src="/provenance-calculation.js?v=3.1.1"></script>
+<script src="/live-prices.js?v=3.1.1"></script>
 
-<script src="/ui-guard.js?v=3.1.0"></script>
+<script src="/ui-guard.js?v=3.1.1"></script>
 
 
 </body>

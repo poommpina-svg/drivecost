@@ -34,7 +34,7 @@ const passed = results.filter(result => result.ok).length;
 const failed = results.length - passed;
 
 const report = [
-  "# DriveCost v3.1.0 — Production Audit Report",
+  "# DriveCost v3.1.1 — Production Audit Report",
   "",
   `วันที่ตรวจ: ${new Date().toISOString()}`,
   "",

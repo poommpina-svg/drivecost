@@ -56,6 +56,66 @@
       : safeDistance / safeEfficiency;
   }
 
+
+  function resolveTripDistance(input = {}) {
+    const method = input.method === "leg" ? "leg" : "direct";
+    const directDistance = nonNegative(input.directDistance);
+    const oneWayDistance = nonNegative(input.oneWayDistance);
+    const roundTrip = Boolean(input.roundTrip);
+    const tripCount = Math.max(1, Math.min(999, Math.floor(finite(input.tripCount, 1))));
+    const directionMultiplier = roundTrip ? 2 : 1;
+    const multiplier = method === "leg"
+      ? directionMultiplier * tripCount
+      : 1;
+    const totalDistance = method === "leg"
+      ? oneWayDistance * multiplier
+      : directDistance;
+
+    return {
+      method,
+      directDistance: round(directDistance, 6),
+      oneWayDistance: round(oneWayDistance, 6),
+      roundTrip,
+      tripCount,
+      directionMultiplier,
+      multiplier,
+      totalDistance: round(totalDistance, 6),
+      label: method === "leg"
+        ? "ระยะทางต่อเที่ยว"
+        : "ระยะทางรวมโดยตรง",
+      expression: method === "leg"
+        ? `${round(oneWayDistance, 2)} × ${directionMultiplier} × ${tripCount}`
+        : `${round(directDistance, 2)}`,
+      detail: method === "leg"
+        ? `${round(oneWayDistance, 2)} กม. ต่อเที่ยว • ${roundTrip ? "ไป–กลับ" : "เที่ยวเดียว"} • ${tripCount} ชุดการเดินทาง`
+        : "ผู้ใช้กรอกระยะทางรวมทั้งทริปโดยตรง"
+    };
+  }
+
+  function resolveElevation(input = {}, trip = resolveTripDistance()) {
+    const scope = input.scope === "per_leg" ? "per_leg" : "whole_trip";
+    const ascentInput = nonNegative(input.ascent);
+    const descentInput = nonNegative(input.descent);
+    const multiplier = scope === "per_leg" && trip.method === "leg"
+      ? trip.multiplier
+      : 1;
+
+    return {
+      scope,
+      multiplier,
+      ascentInput: round(ascentInput, 6),
+      descentInput: round(descentInput, 6),
+      ascent: round(ascentInput * multiplier, 6),
+      descent: round(descentInput * multiplier, 6),
+      label: scope === "per_leg"
+        ? "ความสูงสะสมต่อเที่ยว"
+        : "ความสูงสะสมรวมทั้งทริป",
+      detail: scope === "per_leg" && trip.method === "leg"
+        ? `คูณตามเส้นทาง ${trip.multiplier} เท่า`
+        : "ใช้ค่าที่กรอกโดยตรง"
+    };
+  }
+
   function confidence(method) {
     if (method === "full_to_full") {
       return {
@@ -223,7 +283,13 @@
 
   function calculateEstimate(input = {}) {
     const mode = ENERGY[input.mode] ? input.mode : "fuel";
-    const distance = nonNegative(input.distance);
+    const trip = resolveTripDistance(
+      input.trip || {
+        method: "direct",
+        directDistance: input.distance
+      }
+    );
+    const distance = trip.totalDistance;
     const efficiency = Math.max(0.0001, finite(input.efficiency, 1));
     const price = nonNegative(input.price);
     const driverFactor = clamp(input.driverFactor || 1, 0.65, 1.7);
@@ -265,7 +331,14 @@
           detail: `${driverFactor >= 1 ? "+" : ""}${round((driverFactor - 1) * 100, 1)}% • แสดงแยก ไม่ซ่อนในสูตร`
         }
       ],
+      trip,
       steps: [
+        {
+          title: "คำนวณระยะทางรวม",
+          expression: trip.expression,
+          result: `${round(distance, 2)} กม.`,
+          note: trip.detail
+        },
         {
           title: "คำนวณพลังงานตามระยะทาง",
           expression: useExpression,
@@ -288,7 +361,9 @@
       ],
       warnings,
       inputs: [
-        ["ระยะทาง", `${round(distance, 2)} กม.`],
+        ["วิธีใส่ระยะทาง", trip.label],
+        ["รายละเอียดระยะทาง", trip.detail],
+        ["ระยะทางรวม", `${round(distance, 2)} กม.`],
         ["อัตราสิ้นเปลือง", mode === "ev" ? `${round(efficiency, 2)} kWh/100 กม.` : `${round(efficiency, 2)} กม./${meta.unit}`],
         ["ราคาพลังงาน", `${round(price, 2)} บาท/${meta.unit}`],
         ["ปัจจัยผู้ขับ", `${round(driverFactor, 3)}×`],
@@ -300,14 +375,28 @@
   function calculateMountain(input = {}) {
     const mode = ENERGY[input.mode] ? input.mode : "fuel";
     const meta = ENERGY[mode];
-    const distance = nonNegative(input.distance);
+    const trip = resolveTripDistance(
+      input.trip || {
+        method: "direct",
+        directDistance: input.distance
+      }
+    );
+    const elevation = resolveElevation(
+      input.elevation || {
+        scope: "whole_trip",
+        ascent: input.ascent,
+        descent: input.descent
+      },
+      trip
+    );
+    const distance = trip.totalDistance;
     const efficiency = Math.max(0.0001, finite(input.efficiency, 1));
     const price = nonNegative(input.price);
     const vehicleMass = clamp(input.vehicleMass, 300, 10_000);
     const payloadMass = clamp(input.payloadMass, 0, 5_000);
     const totalMass = vehicleMass + payloadMass;
-    const ascent = nonNegative(input.ascent);
-    const descent = nonNegative(input.descent);
+    const ascent = elevation.ascent;
+    const descent = elevation.descent;
     const maxGrade = nonNegative(input.maxGrade);
     const driverFactor = clamp(input.driverFactor || 1, 0.65, 1.7);
     const trafficPct = clamp(input.trafficPct, 0, 0.5);
@@ -399,8 +488,24 @@
       climbUse: round(climbUse, 6),
       recoveryUse: round(recoveryUse, 6),
       maxGrade: round(maxGrade, 3),
+      trip,
+      elevation,
       breakdown,
       steps: [
+        {
+          title: "คำนวณระยะทางรวม",
+          expression: trip.expression,
+          result: `${round(distance, 2)} กม.`,
+          note: trip.detail
+        },
+        {
+          title: "จัดเตรียมความสูงสะสม",
+          expression: elevation.scope === "per_leg"
+            ? `${round(elevation.ascentInput, 0)} × ${elevation.multiplier}`
+            : `${round(elevation.ascentInput, 0)}`,
+          result: `ขึ้น ${round(ascent, 0)} ม. • ลง ${round(descent, 0)} ม.`,
+          note: `${elevation.label} • ${elevation.detail}`
+        },
         {
           title: "คำนวณพลังงานทางราบ",
           expression: useExpression,
@@ -435,7 +540,10 @@
       ],
       warnings,
       inputs: [
-        ["ระยะทาง", `${round(distance, 2)} กม.`],
+        ["วิธีใส่ระยะทาง", trip.label],
+        ["รายละเอียดระยะทาง", trip.detail],
+        ["ระยะทางรวม", `${round(distance, 2)} กม.`],
+        ["วิธีใส่ความสูง", elevation.label],
         ["ความสูงสะสมขึ้น", `${round(ascent, 0)} ม.`],
         ["ความสูงสะสมลง", `${round(descent, 0)} ม.`],
         ["น้ำหนักรวม", `${round(totalMass, 0)} กก.`],
@@ -508,6 +616,8 @@
     calculateEstimate,
     calculateMountain,
     buildDriverProfile,
+    resolveTripDistance,
+    resolveElevation,
     energyUseForDistance,
     energyKindForMode,
     round
