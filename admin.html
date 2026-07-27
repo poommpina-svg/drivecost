@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>DriveCost Admin — ศูนย์ตรวจสอบระบบ</title>
+  <link rel="stylesheet" href="/admin.css?v=3.0.0">
+  <script src="/runtime-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+  <script src="/admin.js?v=3.0.0" defer></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <header class="admin-header">
+      <a class="brand" href="/" aria-label="กลับไป DriveCost">
+        <span class="brand-mark">D</span>
+        <span>
+          <b>DriveCost Admin</b>
+          <small>Production Integrity Center</small>
+        </span>
+      </a>
+      <div class="header-actions">
+        <span class="environment-pill" id="environmentPill">กำลังตรวจสอบ</span>
+        <button type="button" class="ghost-button" id="adminSignOutButton" hidden>
+          ออกจากระบบ
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="login-panel" id="adminLoginPanel">
+        <div class="login-copy">
+          <span class="eyebrow">Restricted access</span>
+          <h1>ศูนย์ตรวจสอบความสมบูรณ์</h1>
+          <p>
+            ใช้บัญชี Supabase ที่ได้รับสิทธิ์ผู้ดูแล ระบบนี้แสดงเฉพาะข้อมูลที่จำเป็น
+            สำหรับตรวจสุขภาพระบบและจะไม่แสดงรหัสผ่านหรือ payload ส่วนตัวของผู้ใช้
+          </p>
+        </div>
+
+        <form class="login-form" id="adminLoginForm">
+          <label>
+            <span>อีเมลผู้ดูแล</span>
+            <input id="adminEmail" type="email" autocomplete="username" required>
+          </label>
+          <label>
+            <span>รหัสผ่าน</span>
+            <input id="adminPassword" type="password" autocomplete="current-password" minlength="8" required>
+          </label>
+          <button class="primary-button" type="submit">เข้าสู่ศูนย์ตรวจสอบ</button>
+          <p class="form-message" id="adminLoginMessage" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="dashboard" id="adminDashboard" hidden>
+        <div class="dashboard-head">
+          <div>
+            <span class="eyebrow">Production overview</span>
+            <h1>สถานะระบบ DriveCost</h1>
+            <p id="adminIdentity">—</p>
+          </div>
+          <div class="dashboard-actions">
+            <button type="button" class="ghost-button" id="refreshDashboardButton">
+              รีเฟรชข้อมูล
+            </button>
+            <button type="button" class="primary-button" id="runIntegrityButton">
+              ตรวจสอบทั้งระบบ
+            </button>
+          </div>
+        </div>
+
+        <section class="overall-card" id="overallCard">
+          <div class="status-orb" id="overallOrb" aria-hidden="true"></div>
+          <div>
+            <small>สถานะโดยรวม</small>
+            <strong id="overallStatus">กำลังตรวจสอบ</strong>
+            <span id="overallDetail">กำลังเชื่อมต่อระบบหลังบ้าน</span>
+          </div>
+          <time id="overviewGeneratedAt">—</time>
+        </section>
+
+        <section class="metric-grid" aria-label="สรุปตัวเลขระบบ">
+          <article class="metric-card">
+            <small>ผู้ใช้ทั้งหมด</small>
+            <strong id="metricUsers">—</strong>
+            <span id="metricUsersDetail">—</span>
+          </article>
+          <article class="metric-card">
+            <small>โปรไฟล์</small>
+            <strong id="metricProfiles">—</strong>
+            <span id="metricProfilesDetail">—</span>
+          </article>
+          <article class="metric-card">
+            <small>ข้อมูลซิงก์</small>
+            <strong id="metricSync">—</strong>
+            <span id="metricSyncDetail">—</span>
+          </article>
+          <article class="metric-card">
+            <small>ราคาน้ำมัน</small>
+            <strong id="metricFuel">—</strong>
+            <span id="metricFuelDetail">—</span>
+          </article>
+        </section>
+
+        <div class="dashboard-grid">
+          <section class="panel checks-panel">
+            <div class="panel-head">
+              <div>
+                <h2>รายการตรวจสอบ</h2>
+                <p>การตั้งค่า ความเชื่อมต่อ ฐานข้อมูล และขนาดข้อมูล</p>
+              </div>
+              <span class="count-badge" id="checkCount">0 รายการ</span>
+            </div>
+            <div class="check-list" id="integrityChecks"></div>
+          </section>
+
+          <section class="panel deploy-panel">
+            <div class="panel-head">
+              <div>
+                <h2>Deployment</h2>
+                <p>ข้อมูลเวอร์ชันที่กำลังให้บริการ</p>
+              </div>
+            </div>
+            <dl class="definition-list" id="deploymentDetails"></dl>
+          </section>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel users-panel">
+            <div class="panel-head">
+              <div>
+                <h2>ผู้ใช้ล่าสุด</h2>
+                <p>อีเมลถูกปิดบังเพื่อลดการเปิดเผยข้อมูลส่วนบุคคล</p>
+              </div>
+              <button type="button" class="small-button" id="reloadUsersButton">
+                โหลดใหม่
+              </button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>บัญชี</th>
+                    <th>ยืนยันแล้ว</th>
+                    <th>สร้างเมื่อ</th>
+                    <th>เข้าใช้ล่าสุด</th>
+                  </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                  <tr><td colspan="4" class="empty-cell">กำลังโหลด</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel fuel-panel">
+            <div class="panel-head">
+              <div>
+                <h2>ราคาน้ำมัน OR</h2>
+                <p>ตรวจสถานะแคชและการเชื่อมต่อต้นทาง</p>
+              </div>
+              <button type="button" class="small-button" id="refreshFuelButton">
+                ตรวจราคาต้นทาง
+              </button>
+            </div>
+            <dl class="definition-list" id="fuelDetails"></dl>
+          </section>
+        </div>
+
+        <section class="panel audit-panel">
+          <div class="panel-head">
+            <div>
+              <h2>บันทึกกิจกรรมผู้ดูแล</h2>
+              <p>เก็บเฉพาะการตรวจสอบและการรีเฟรชระบบ ไม่มีรหัสผ่านหรือ access token</p>
+            </div>
+            <button type="button" class="small-button" id="reloadAuditButton">
+              โหลดใหม่
+            </button>
+          </div>
+          <div class="audit-list" id="auditList">
+            <div class="empty-cell">กำลังโหลด</div>
+          </div>
+        </section>
+
+        <p class="dashboard-message" id="dashboardMessage" role="status" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <footer>
+      <span>DriveCost v3.0.0</span>
+      <span>Admin API ใช้ Supabase session และตรวจสิทธิ์ฝั่งเซิร์ฟเวอร์</span>
+    </footer>
+  </div>
+</body>
+</html>

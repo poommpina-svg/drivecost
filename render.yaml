@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: drivecost
+    runtime: node
+    plan: starter
+    region: singapore
+    buildCommand: npm ci && npm run verify
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: NODE_VERSION
+        value: 24.14.1
+      - key: ADMIN_DASHBOARD_ENABLED
+        value: "true"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: ADMIN_EMAILS
+        sync: false
+      - key: ADMIN_USER_IDS
+        sync: false
+      - key: IP_HASH_SALT
+        generateValue: true

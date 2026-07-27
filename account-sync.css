@@ -1,0 +1,562 @@
+
+/* DriveCost v2.5 — simple, production-style account experience */
+
+.account-chip{
+  position:relative;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(14,32,50,.82);
+  color:#dce8f2;
+  padding:7px 10px;
+  text-align:left;
+  transition:.18s ease
+}
+.account-chip:hover{
+  border-color:rgba(19,214,187,.46);
+  transform:translateY(-1px)
+}
+.account-avatar,.account-profile-avatar{
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  border-radius:50%;
+  background:linear-gradient(145deg,rgba(19,214,187,.28),rgba(36,130,255,.22));
+  color:#eafffb;
+  font-weight:900;
+  border:1px solid rgba(19,214,187,.34)
+}
+.account-avatar{width:27px;height:27px;font-size:10px}
+.account-chip-copy{display:grid;line-height:1.15;min-width:0}
+.account-chip-copy strong{
+  max-width:122px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:9px
+}
+.account-chip-copy small{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:7px;
+  white-space:nowrap
+}
+.sync-indicator{
+  width:9px;height:9px;
+  flex:0 0 auto;
+  border-radius:50%;
+  background:#94a3b8;
+  box-shadow:0 0 0 3px rgba(148,163,184,.1)
+}
+.sync-indicator.local{background:#94a3b8}
+.sync-indicator.syncing{
+  background:#f59e0b;
+  box-shadow:0 0 0 3px rgba(245,158,11,.12);
+  animation:statusPulse 1.3s infinite
+}
+.sync-indicator.synced{
+  background:#22c55e;
+  box-shadow:0 0 0 3px rgba(34,197,94,.12)
+}
+.sync-indicator.offline{
+  background:#2482ff;
+  box-shadow:0 0 0 3px rgba(36,130,255,.12)
+}
+.sync-indicator.error,.sync-indicator.blocked{
+  background:#ef4444;
+  box-shadow:0 0 0 3px rgba(239,68,68,.12)
+}
+
+.simple-account-shell{
+  width:min(920px,100%);
+  margin:0 auto;
+}
+.simple-account-panel{
+  position:relative;
+  overflow:hidden;
+  padding:0;
+  background:
+    radial-gradient(circle at 92% 8%,rgba(19,214,187,.13),transparent 22rem),
+    radial-gradient(circle at 4% 100%,rgba(36,130,255,.08),transparent 19rem),
+    linear-gradient(155deg,rgba(11,29,45,.98),rgba(6,20,33,.99))
+}
+.simple-account-panel::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:3px;
+  background:linear-gradient(90deg,var(--teal2),var(--teal),#4c9dff)
+}
+.simple-account-brand{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:24px 24px 18px;
+  border-bottom:1px solid var(--line)
+}
+.simple-account-logo{
+  width:54px;height:54px;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  border-radius:16px;
+  background:linear-gradient(145deg,rgba(19,214,187,.18),rgba(36,130,255,.14));
+  border:1px solid rgba(19,214,187,.3);
+  box-shadow:0 16px 36px rgba(0,0,0,.22)
+}
+.simple-account-logo svg{
+  width:28px;height:28px;
+  fill:none;stroke:var(--teal);
+  stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round
+}
+.simple-account-brand span{
+  display:block;
+  color:var(--teal);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.14em
+}
+.simple-account-brand h2{
+  margin:5px 0 0;
+  font-size:21px;
+  letter-spacing:-.02em
+}
+.simple-account-brand p{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-size:10px;
+  line-height:1.6
+}
+
+.simple-account-status{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:16px 24px 0;
+  padding:11px 13px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  background:rgba(7,20,33,.52)
+}
+.simple-account-status strong{display:block;font-size:10px}
+.simple-account-status small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:8px
+}
+
+.account-state{
+  padding:18px 24px 24px
+}
+.account-state[hidden]{display:none!important}
+
+.simple-auth-tabs{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:5px;
+  margin-bottom:12px;
+  padding:4px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(4,16,27,.68)
+}
+.simple-auth-tabs button{
+  min-height:42px;
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  color:#889daf;
+  font-size:9px;
+  font-weight:850
+}
+.simple-auth-tabs button.active{
+  color:#fff;
+  background:linear-gradient(145deg,rgba(19,214,187,.18),rgba(17,82,93,.2));
+  box-shadow:inset 0 -2px 0 var(--teal)
+}
+
+.simple-auth-form{
+  display:grid;
+  gap:12px;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:rgba(7,20,33,.62);
+  box-shadow:0 18px 45px rgba(0,0,0,.16)
+}
+.simple-auth-form[hidden]{display:none!important}
+.simple-auth-form .field label{
+  display:block;
+  margin-bottom:6px;
+  color:#c1cfda;
+  font-size:9px
+}
+.simple-auth-form .field-box{
+  min-height:46px
+}
+.simple-auth-form input{
+  font-size:12px
+}
+.simple-auth-submit{
+  width:100%;
+  min-height:46px;
+  margin-top:2px;
+  font-size:11px
+}
+.simple-auth-note{
+  margin:0;
+  color:#7f93a5;
+  text-align:center;
+  font-size:8px;
+  line-height:1.55
+}
+
+.simple-account-trust{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+  margin-top:12px
+}
+.simple-account-trust>div{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  padding:11px;
+  border:1px solid var(--line);
+  border-radius:11px;
+  background:rgba(7,20,33,.42)
+}
+.simple-account-trust>div>span{
+  display:grid;
+  place-items:center;
+  width:22px;height:22px;
+  flex:0 0 auto;
+  border-radius:50%;
+  color:#061c17;
+  background:var(--teal);
+  font-size:9px;
+  font-weight:900
+}
+.simple-account-trust p{margin:0}
+.simple-account-trust strong{display:block;font-size:9px}
+.simple-account-trust small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:7px;
+  line-height:1.45
+}
+
+.simple-signed-in-card{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  padding:16px;
+  border:1px solid rgba(19,214,187,.24);
+  border-radius:14px;
+  background:linear-gradient(145deg,rgba(9,43,45,.72),rgba(7,24,37,.78))
+}
+.account-profile-avatar{
+  width:52px;height:52px;
+  font-size:18px
+}
+.signed-in-copy{min-width:0;flex:1}
+.signed-in-copy>span{
+  display:block;
+  color:var(--teal);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.09em;
+  text-transform:uppercase
+}
+.signed-in-copy h3{
+  margin:5px 0 0;
+  font-size:16px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.signed-in-copy p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:9px
+}
+
+.simple-save-overview{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:12px
+}
+.simple-save-overview article{
+  min-width:0;
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(7,20,33,.54)
+}
+.simple-save-icon{
+  width:30px;height:30px;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  border-radius:9px;
+  color:#9eb2c3;
+  background:rgba(148,163,184,.1);
+  font-size:12px;
+  font-weight:900
+}
+.simple-save-icon.saved{
+  color:#7df9b0;
+  background:rgba(34,197,94,.1)
+}
+.simple-save-overview small{
+  display:block;
+  color:var(--muted);
+  font-size:7px
+}
+.simple-save-overview strong{
+  display:block;
+  margin-top:5px;
+  font-size:10px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis
+}
+.simple-save-overview strong b{
+  font-size:16px;
+  color:#fff
+}
+.simple-save-overview article div>span{
+  display:block;
+  margin-top:4px;
+  color:#72879a;
+  font-size:7px;
+  line-height:1.45
+}
+
+.simple-auto-save-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-top:12px;
+  padding:14px;
+  border:1px solid rgba(36,130,255,.2);
+  border-radius:12px;
+  background:linear-gradient(145deg,rgba(36,130,255,.09),rgba(7,20,33,.58))
+}
+.simple-auto-save-card>div{
+  display:flex;
+  align-items:flex-start;
+  gap:10px
+}
+.auto-save-pulse{
+  width:10px;height:10px;
+  margin-top:4px;
+  flex:0 0 auto;
+  border-radius:50%;
+  background:#22c55e;
+  box-shadow:0 0 0 4px rgba(34,197,94,.1)
+}
+.simple-auto-save-card strong{display:block;font-size:10px}
+.simple-auto-save-card p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:8px;
+  line-height:1.5
+}
+
+.simple-data-list{
+  display:grid;
+  gap:0;
+  margin-top:12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden
+}
+.simple-data-list>div{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:11px 12px;
+  border-bottom:1px solid var(--line);
+  background:rgba(7,20,33,.42)
+}
+.simple-data-list>div:last-child{border-bottom:0}
+.simple-data-list span{
+  color:#9eb0bf;
+  font-size:9px
+}
+.simple-data-list strong{
+  color:#7df9b0;
+  font-size:8px
+}
+
+.simple-account-warning{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:14px;
+  align-items:center;
+  margin-top:12px;
+  padding:13px;
+  border:1px solid rgba(245,158,11,.28);
+  border-radius:12px;
+  background:rgba(245,158,11,.07)
+}
+.simple-account-warning strong{
+  display:block;
+  color:#ffd36a;
+  font-size:10px
+}
+.simple-account-warning p{
+  margin:4px 0 0;
+  color:#ad9566;
+  font-size:8px;
+  line-height:1.5
+}
+.ownership-actions{
+  display:flex;
+  align-items:center;
+  gap:8px
+}
+
+.simple-recovery-head,.account-unavailable-card{
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  margin-bottom:12px;
+  padding:13px;
+  border:1px solid rgba(36,130,255,.2);
+  border-radius:12px;
+  background:rgba(36,130,255,.06)
+}
+.simple-recovery-head>span,.account-unavailable-icon{
+  display:grid;
+  place-items:center;
+  width:31px;height:31px;
+  flex:0 0 auto;
+  border-radius:9px;
+  color:#9cc9ff;
+  background:rgba(36,130,255,.12);
+  font-weight:900
+}
+.simple-recovery-head strong,.account-unavailable-card strong{
+  display:block;
+  font-size:10px
+}
+.simple-recovery-head p,.account-unavailable-card p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-size:8px;
+  line-height:1.5
+}
+
+.developer-setup{
+  margin-top:10px;
+  border:1px dashed var(--line);
+  border-radius:11px;
+  background:rgba(5,17,28,.42)
+}
+.developer-setup summary{
+  cursor:pointer;
+  padding:11px 12px;
+  color:#8296a8;
+  font-size:8px
+}
+.developer-setup .account-form{
+  display:grid;
+  gap:10px;
+  padding:0 12px 12px
+}
+.developer-setup .field label{
+  display:block;
+  margin-bottom:5px;
+  color:#9db0bf;
+  font-size:8px
+}
+.account-form-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  flex-wrap:wrap
+}
+
+.account-message{
+  margin:0 24px 22px;
+  padding:11px 12px;
+  border:1px solid rgba(19,214,187,.22);
+  border-radius:10px;
+  background:rgba(19,214,187,.07);
+  color:#b9f5e9;
+  font-size:9px;
+  line-height:1.5
+}
+.account-message.error{
+  color:#ffb2b2;
+  border-color:rgba(239,68,68,.25);
+  background:rgba(239,68,68,.07)
+}
+.account-message.warning{
+  color:#ffd98b;
+  border-color:rgba(245,158,11,.25);
+  background:rgba(245,158,11,.07)
+}
+
+body.a11y-high-contrast .simple-account-panel,
+body.a11y-high-contrast .simple-auth-form,
+body.a11y-high-contrast .simple-signed-in-card,
+body.a11y-high-contrast .simple-save-overview article{
+  background:#000!important
+}
+
+@media(max-width:1280px){
+  .account-chip-copy{display:none}
+  .account-chip{
+    width:42px;
+    justify-content:center;
+    padding:7px
+  }
+  .account-chip .sync-indicator{
+    position:absolute;
+    right:4px;
+    bottom:4px;
+    width:7px;height:7px
+  }
+}
+@media(max-width:760px){
+  .simple-account-brand{
+    align-items:flex-start;
+    padding:19px 16px 15px
+  }
+  .simple-account-logo{
+    width:46px;height:46px;
+    border-radius:14px
+  }
+  .simple-account-brand h2{font-size:17px}
+  .simple-account-status{margin:13px 16px 0}
+  .account-state{padding:14px 16px 18px}
+  .simple-account-trust{grid-template-columns:1fr}
+  .simple-save-overview{grid-template-columns:1fr}
+  .simple-auto-save-card{
+    align-items:flex-start;
+    flex-direction:column
+  }
+  .simple-auto-save-card .btn{width:100%}
+  .simple-account-warning{grid-template-columns:1fr}
+  .ownership-actions{display:grid}
+  .simple-signed-in-card{align-items:flex-start;flex-wrap:wrap}
+  .simple-signed-in-card>.btn{width:100%}
+  .account-message{margin:0 16px 16px}
+}
+@media(max-width:480px){
+  .simple-auth-tabs{grid-template-columns:1fr}
+  .simple-account-brand p{font-size:9px}
+}

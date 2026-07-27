@@ -1,0 +1,13 @@
+DRIVECOST v2.6.2 PRICE BUTTON FIX
+
+1. Extract this ZIP into a new folder.
+2. Double-click RUN-PRICE-BUTTON-FIX.bat.
+3. Keep the CMD window open.
+4. Open http://127.0.0.1:8123/?pricebutton=262
+5. Bottom-right badge must say v2.6.2 PRICE BUTTON FIX.
+
+Fixes:
+- Refresh button keeps its SVG icon.
+- Exact OR product remains selected.
+- Active price button is disabled.
+- Duplicate clicks are blocked.

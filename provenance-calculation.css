@@ -1,0 +1,345 @@
+
+/* DriveCost Pro v2.2 — Energy Price Provenance & Calculation Audit */
+
+/* Trust bar beneath result hero */
+.trust-bar{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:stretch;
+  margin-top:10px
+}
+.trust-source{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:11px;
+  padding:11px 12px;
+  border:1px solid rgba(19,214,187,.2);
+  border-radius:11px;
+  background:linear-gradient(145deg,rgba(7,36,42,.72),rgba(7,24,36,.8))
+}
+.trust-icon{
+  width:34px;height:34px;flex:0 0 auto;
+  display:grid;place-items:center;
+  border-radius:10px;
+  color:var(--teal);
+  background:rgba(19,214,187,.1);
+  border:1px solid rgba(19,214,187,.18)
+}
+.trust-icon svg,.formula-button svg,.source-disclaimer svg{
+  width:18px;height:18px;
+  fill:none;stroke:currentColor;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round
+}
+.trust-source div{min-width:0}
+.trust-source small{
+  display:block;color:var(--muted);
+  font-size:8px;margin-bottom:3px
+}
+.trust-source strong{
+  display:block;font-size:10px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.trust-source span{
+  display:block;color:#7f93a5;font-size:8px;margin-top:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+}
+.formula-button{
+  min-width:130px;
+  border:1px solid rgba(36,130,255,.28);
+  border-radius:11px;
+  background:linear-gradient(145deg,rgba(36,130,255,.12),rgba(14,32,50,.82));
+  color:#cfe3ff;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 12px;font-size:10px;font-weight:820
+}
+.formula-button:hover{
+  border-color:rgba(36,130,255,.55);
+  transform:translateY(-1px)
+}
+
+/* Inline provenance beside calculator price */
+.inline-source-note{
+  display:flex;align-items:center;gap:6px;
+  min-height:18px;margin-top:6px;
+  color:#7f93a5;font-size:8px;line-height:1.35
+}
+.source-dot{
+  width:7px;height:7px;flex:0 0 auto;
+  border-radius:50%;
+  background:#94a3b8
+}
+.source-dot.sample{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.1)}
+.source-dot.user,.source-dot.receipt,.source-dot.provider,.source-dot.company{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.1)}
+.source-dot.external{background:#2482ff;box-shadow:0 0 0 3px rgba(36,130,255,.1)}
+.source-dot.unsaved{background:#ef8f3d;box-shadow:0 0 0 3px rgba(239,143,61,.1)}
+
+/* Price source page */
+.source-disclaimer{
+  display:flex;align-items:flex-start;gap:11px;
+  margin-bottom:15px;padding:13px 14px;
+  border:1px solid rgba(245,158,11,.22);
+  border-radius:12px;
+  background:rgba(245,158,11,.06);
+  color:#f0cc84
+}
+.source-disclaimer svg{flex:0 0 auto;margin-top:1px}
+.source-disclaimer strong{display:block;font-size:11px}
+.source-disclaimer p{
+  margin:4px 0 0;
+  color:#c7ad79;font-size:9px;line-height:1.55
+}
+.provenance-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))
+}
+.provenance-card{
+  display:flex;flex-direction:column;gap:10px;
+  padding:14px
+}
+.price-card-head{
+  display:flex;justify-content:space-between;
+  gap:12px;align-items:flex-start
+}
+.price-card-head strong{font-size:14px}
+.price-card-head p{margin:4px 0 0}
+.source-type-badge,.source-status-badge{
+  display:inline-flex;align-items:center;
+  border-radius:999px;padding:5px 8px;
+  font-size:8px;font-weight:850;
+  line-height:1.1;text-align:center
+}
+.source-type-badge.system_sample,.source-status-badge.system_sample{
+  color:#ffd36a;background:rgba(245,158,11,.1);
+  border:1px solid rgba(245,158,11,.22)
+}
+.source-type-badge.user,.source-status-badge.user,
+.source-type-badge.receipt,.source-status-badge.receipt,
+.source-type-badge.provider,.source-status-badge.provider,
+.source-type-badge.company,.source-status-badge.company{
+  color:#8ef4b2;background:rgba(34,197,94,.08);
+  border:1px solid rgba(34,197,94,.2)
+}
+.source-type-badge.external,.source-status-badge.external{
+  color:#a8cbff;background:rgba(36,130,255,.09);
+  border:1px solid rgba(36,130,255,.22)
+}
+.provenance-label{
+  display:block;color:#a7b6c6;
+  font-size:9px;margin-bottom:-4px
+}
+.provenance-fields{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px
+}
+.provenance-fields .field label{
+  font-size:9px
+}
+.provenance-fields .field label span{
+  color:#6f8497;font-weight:500
+}
+.provenance-fields input,
+.provenance-fields select{
+  font-size:11px
+}
+.price-card-footer{
+  display:flex;justify-content:space-between;gap:10px;
+  align-items:center;
+  padding-top:9px;margin-top:auto;
+  border-top:1px solid var(--line)
+}
+.price-card-footer span{color:var(--muted);font-size:8px}
+.price-card-footer strong{text-align:right;font-size:8px;color:#b9c9d5}
+
+/* Calculation audit page */
+.calculation-details-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);
+  gap:14px;
+  align-items:start
+}
+.calculation-main,.calculation-sidebar{
+  min-width:0
+}
+.detail-eyebrow{
+  display:block;color:var(--teal);
+  text-transform:uppercase;letter-spacing:.13em;
+  font-size:8px;font-weight:850;margin-bottom:5px
+}
+.calculation-audit-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:18px;
+  margin-bottom:15px;padding:17px;
+  border:1px solid rgba(19,214,187,.2);
+  border-radius:13px;
+  background:linear-gradient(145deg,rgba(8,39,43,.75),rgba(7,25,38,.82))
+}
+.calculation-audit-head small{
+  display:block;color:#a6bac8;font-size:9px
+}
+.calculation-audit-head>div>strong{
+  display:block;font-size:31px;letter-spacing:-.03em;margin-top:5px
+}
+.calculation-audit-head>div>span{
+  display:block;color:#7e94a5;font-size:8px;margin-top:5px
+}
+.formula-version{
+  flex:0 0 auto;
+  min-width:92px;
+  text-align:center;padding:10px;
+  border:1px solid var(--line);
+  border-radius:10px;background:rgba(7,20,33,.55)
+}
+.formula-version span{
+  display:block;color:var(--muted);font-size:8px
+}
+.formula-version strong{
+  display:block;color:var(--teal);font-size:13px;margin-top:5px
+}
+.formula-steps{
+  display:grid;gap:10px
+}
+.formula-step{
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto;
+  gap:12px;align-items:center;
+  padding:13px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(8,23,36,.68)
+}
+.formula-step-number{
+  width:30px;height:30px;
+  display:grid;place-items:center;
+  border-radius:9px;
+  background:var(--tealSoft);color:var(--teal);
+  font-size:10px;font-weight:900
+}
+.formula-step-copy{min-width:0}
+.formula-step-copy strong{display:block;font-size:11px}
+.formula-expression{
+  display:block;margin-top:5px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:#93b5c8;font-size:9px;
+  line-height:1.5;overflow-wrap:anywhere
+}
+.formula-step-result{
+  max-width:155px;text-align:right
+}
+.formula-step-result strong{
+  display:block;color:#fff;font-size:14px
+}
+.formula-step-result span{
+  display:block;color:var(--muted);font-size:8px;margin-top:3px
+}
+.formula-step.final{
+  border-color:rgba(19,214,187,.32);
+  background:linear-gradient(145deg,rgba(19,214,187,.11),rgba(8,24,36,.72))
+}
+.formula-step.final .formula-step-result strong{
+  color:#7df9e4;font-size:17px
+}
+
+.calculation-sidebar{
+  position:sticky;top:18px
+}
+.detail-side-section{
+  padding-bottom:15px;margin-bottom:15px;
+  border-bottom:1px solid var(--line)
+}
+.detail-side-section:last-child{
+  padding-bottom:0;margin-bottom:0;border-bottom:0
+}
+.detail-side-section h3{
+  margin:0 0 11px;font-size:12px
+}
+.audit-list{
+  border:1px solid var(--line);
+  border-radius:11px;overflow:hidden
+}
+.audit-row{
+  display:flex;justify-content:space-between;gap:12px;
+  padding:10px 11px;
+  border-bottom:1px solid var(--line);
+  background:rgba(7,20,33,.48)
+}
+.audit-row:last-child{border-bottom:0}
+.audit-row span{color:var(--muted);font-size:8px}
+.audit-row strong{text-align:right;font-size:9px}
+.source-audit-card{
+  padding:13px;
+  border:1px solid rgba(36,130,255,.2);
+  border-radius:12px;
+  background:linear-gradient(145deg,rgba(36,130,255,.08),rgba(8,23,36,.72))
+}
+.source-audit-card>strong{
+  display:block;font-size:11px;margin-top:9px
+}
+.source-audit-card p{
+  margin:5px 0 0;
+  color:#8da2b4;font-size:8px;line-height:1.55
+}
+.source-audit-card a{
+  display:inline-flex;margin-top:9px;
+  color:#8fc2ff;font-size:9px;text-decoration:none
+}
+.source-audit-card a:hover{text-decoration:underline}
+.source-audit-meta{
+  display:flex;justify-content:space-between;gap:12px;
+  margin-top:11px;padding-top:9px;
+  border-top:1px solid var(--line)
+}
+.source-audit-meta span{color:var(--muted);font-size:8px}
+.source-audit-meta strong{text-align:right;font-size:8px}
+.limitation-list{
+  display:grid;gap:8px;
+  padding-left:17px;margin:0;
+  color:#8ea2b3;font-size:8px;line-height:1.55
+}
+
+/* High contrast refinements */
+body.a11y-high-contrast .trust-bar,
+body.a11y-high-contrast .source-disclaimer,
+body.a11y-high-contrast .calculation-audit-head,
+body.a11y-high-contrast .formula-step,
+body.a11y-high-contrast .source-audit-card{
+  background:#000!important
+}
+
+/* Responsive */
+@media(max-width:1180px){
+  .calculation-details-layout{
+    grid-template-columns:1fr
+  }
+  .calculation-sidebar{
+    position:static
+  }
+}
+@media(max-width:760px){
+  .trust-bar{
+    grid-template-columns:1fr
+  }
+  .formula-button{
+    min-width:0
+  }
+  .provenance-grid{
+    grid-template-columns:1fr
+  }
+  .provenance-fields{
+    grid-template-columns:1fr
+  }
+  .calculation-audit-head{
+    align-items:flex-start
+  }
+  .calculation-audit-head>div>strong{
+    font-size:25px
+  }
+  .formula-step{
+    grid-template-columns:30px minmax(0,1fr)
+  }
+  .formula-step-result{
+    grid-column:2;
+    max-width:none;text-align:left
+  }
+}

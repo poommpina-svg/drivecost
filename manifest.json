@@ -1,0 +1,12 @@
+{
+  "name": "DriveCost",
+  "short_name": "DriveCost",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#06111d",
+  "theme_color": "#06111d",
+  "lang": "th",
+  "description": "คำนวณค่าเดินทาง บันทึกข้อมูลแยกตามบัญชี และซิงก์ผ่าน Supabase",
+  "version": "3.0.0"
+}

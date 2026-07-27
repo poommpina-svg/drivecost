@@ -1,0 +1,84 @@
+{
+  "name": "DriveCost",
+  "version": "3.0.0",
+  "target": "Render Web Service",
+  "generatedAt": "2026-07-27T08:00:00Z",
+  "verification": {
+    "npmRunVerify": "passed",
+    "npmRunAuditProd": "passed",
+    "unitTests": "10/10 passed",
+    "preflight": "46/46 passed",
+    "secretScan": "passed",
+    "browserQA": "passed_with_mock_backends"
+  },
+  "files": {
+    "render.yaml": {
+      "bytes": 780,
+      "sha256": "c4441a8a3a3f13434a52a66bc4edeffdc3baefdf7fc437401a01c5ae54cf15fe"
+    },
+    ".node-version": {
+      "bytes": 8,
+      "sha256": "51849cee918b92b09b95121b54380f6124c0f578d8c2323221c0d75bbbadb08d"
+    },
+    ".env.example": {
+      "bytes": 645,
+      "sha256": "33b8814694be26608cf62808f0b5ef07118c83bf8d911c95ab804a22d573a6cd"
+    },
+    "server.js": {
+      "bytes": 16600,
+      "sha256": "40bbb69695b4a6b9686635afd93bae17dcae673844f8cd764e18ff7eee0db3d3"
+    },
+    "admin.html": {
+      "bytes": 8542,
+      "sha256": "8c29c163eed690c6ad8f161658f5237c13c267409f40613764ecab851b6ed524"
+    },
+    "admin.js": {
+      "bytes": 18359,
+      "sha256": "e581ed543162b2b366ae3f45efa5bad1d64f748f29244ac1a3df68560c579a2e"
+    },
+    "admin.css": {
+      "bytes": 10139,
+      "sha256": "1fa56a80f2ced59b863af4622d4d3bc5673b61b5bf7f9b6675d64931fa8b8021"
+    },
+    "supabase/production.sql": {
+      "bytes": 12153,
+      "sha256": "88c1bc1921cdcd2c1d858c98f08cfda765f8a54cafc2aea53a3502b4f51d194d"
+    },
+    "DEPLOY-RENDER.md": {
+      "bytes": 4747,
+      "sha256": "e0ad29e0151b1254a7e0b692e400525a72115fbec0d953dbcaa2fd9ee9760334"
+    },
+    "ADMIN-GUIDE.md": {
+      "bytes": 2876,
+      "sha256": "01ecf71d14678164bdf22da912f1904a3bc1d379d0b2a3eebe9dc18eb6f5bec1"
+    },
+    "PRODUCTION-CHECKLIST.md": {
+      "bytes": 3904,
+      "sha256": "7fd725b06e7457e57ae90553508e227faddf7364a9523408a3dd162c35f5f852"
+    },
+    "SECURITY.md": {
+      "bytes": 1602,
+      "sha256": "51494d670dc8e7bc413664592c04d58eed041fbf3b1755722bb848fbd97fcd76"
+    },
+    "reports/PRODUCTION_AUDIT_REPORT.md": {
+      "bytes": 5758,
+      "sha256": "e38df98a5011b311bac2f39e7349fa1bc2646e2979a6b6b6fe7f995335849920"
+    },
+    "reports/BROWSER_QA_REPORT.md": {
+      "bytes": 1320,
+      "sha256": "67c2e1a52d41324a662701521932bc97dbd23561da2abaaf9feed09d6815e72b"
+    },
+    "index.html": {
+      "bytes": 62183,
+      "sha256": "a9ed0f888298f0d3cc791c13bfc4a06973888b0cafc4635b16878664129c8356"
+    },
+    "package.json": {
+      "bytes": 621,
+      "sha256": "2b8dc12c169a5b40162a8ce121f8f2fa496673ec4f3fdc9cda3163cdafab9568"
+    },
+    "package-lock.json": {
+      "bytes": 288,
+      "sha256": "3c20d5109e3686eb9727bba256f2e2ef374cc3d6efaeaa5b3cf089d02bbc871c"
+    }
+  }
+}

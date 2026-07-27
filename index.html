@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="th">
+<head>
+<script src="/storage-scope.js?v=3.0.0"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#06111d">
+  <meta name="description" content="DriveCost - คำนวณค่าใช้จ่ายการเดินทางสำหรับรถน้ำมัน ก๊าซ ไฮบริด EV และรถดัดแปลง">
+  <link rel="manifest" href="/manifest.json?v=3.0.0">
+<meta name="application-name" content="DriveCost">
+<meta name="description" content="คำนวณค่าเดินทางและจัดเก็บข้อมูลแยกตามบัญชีอย่างปลอดภัย">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="/">
+  <title>DriveCost v3.0.0</title>
+  <link rel="stylesheet" href="/app.bundle.css?v=3.0.0">
+  
+  
+  
+  
+  
+
+
+<script src="/production-bootstrap.js?v=3.0.0"></script>
+
+
+
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><div class="gauge"></div><div class="road"></div></div>
+      <div class="brand-name"><strong>Drive<b>Cost</b></strong><span>TRIP COST</span></div>
+    </div>
+
+    <nav class="nav" aria-label="เมนูหลัก">
+<button type="button" class="nav-link active" data-page="calculator"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h8M8 11h2M14 11h2M8 15h2M14 15h2M8 19h2M14 19h2"/></svg><span>คำนวณค่าเดินทาง</span></button>
+<button type="button" class="nav-link" data-page="scenarios"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 9h6M9 13h6M9 17h4"/></svg><span>สถานการณ์ของฉัน</span></button>
+<button type="button" class="nav-link" data-page="vehicles"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14l1-4-2-4H6l-2 4 1 4Z"/><path d="M7 9l1-3h8l1 3M4 13h16"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg><span>รถของฉัน</span></button>
+<button type="button" class="nav-link" data-page="compare"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"/><path d="m17 5 3 3-3 3M7 13l-3 3 3 3"/></svg><span>เปรียบเทียบ</span></button>
+<button type="button" class="nav-link" data-page="history"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2M4.5 5.5 3 4"/></svg><span>ประวัติการคำนวณ</span></button>
+<button type="button" class="nav-link" data-page="energy"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16"/><path d="M5 21h13M9 7h5v4H9zM17 8h2l2 2v6a2 2 0 0 1-4 0v-3"/></svg><span>ราคาพลังงาน</span></button>
+<button type="button" class="nav-link" data-page="account"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+  <circle cx="12" cy="8" r="4"/>
+  <path d="M4 21a8 8 0 0 1 16 0"/>
+  <path d="M18.5 3.5 20 5l2.5-2.5"/>
+</svg><span>บัญชีของฉัน</span></button>
+<button type="button" class="nav-link" data-page="settings"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg><span>ตั้งค่า</span></button>
+<button type="button" class="nav-link" data-page="guide"><svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A3.5 3.5 0 0 1 7.5 2H12v18H7.5A3.5 3.5 0 0 0 4 23.5z"/><path d="M20 5.5A3.5 3.5 0 0 0 16.5 2H12v18h4.5a3.5 3.5 0 0 1 3.5 3.5z"/></svg><span>คู่มือการใช้งาน</span></button>
+</nav>
+<div class="sidebar-footer">
+    <span class="sidebar-status-dot" aria-hidden="true"></span>
+    <span>ข้อมูลเก็บในอุปกรณ์นี้</span>
+  </div>
+  <div class="version">DriveCost v3.0.0</div>
+  </aside>
+
+  <main class="content">
+    <header class="page-head">
+      <div>
+        <h1 id="pageTitle">คำนวณค่าใช้จ่ายการเดินทาง</h1>
+        <p id="pageSubtitle">คำนวณได้ทุกพลังงาน • ทุกเส้นทาง • ทุกรูปแบบการขับขี่</p>
+      </div>
+      <div class="head-actions" id="headActions">
+        <button type="button" class="btn" data-go-page="compare"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"/><path d="m17 5 3 3-3 3M7 13l-3 3 3 3"/></svg> เปรียบเทียบ</button>
+        <button type="button" class="btn" id="saveTopBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l2 2v16H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg> บันทึกสถานการณ์</button>
+      </div>
+
+      <div class="utility-actions" aria-label="เครื่องมือระบบ">
+        <button type="button" class="system-chip" id="systemStatusButton"
+                aria-haspopup="dialog" aria-controls="systemStatusPanel">
+          <span class="status-indicator checking" id="statusIndicator" aria-hidden="true"></span>
+          <span class="system-chip-copy">
+            <strong id="systemStatusLabel">กำลังตรวจสอบระบบ</strong>
+            <small id="systemStatusSummary">โปรดรอสักครู่</small>
+          </span>
+        </button>
+        <button type="button" class="utility-button" id="accessibilityButton"
+                aria-haspopup="dialog" aria-controls="accessibilityPanel">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="4.5" r="2.2"/>
+            <path d="M4 8.5h16M12 7v14M8 21l4-7 4 7M8 10l4 4 4-4"/>
+          </svg>
+          <span>การเข้าถึง</span>
+        </button>
+        <button type="button" class="account-chip" id="accountChip" data-go-page="account" aria-label="เปิดบัญชีและการซิงก์">
+          <span class="account-avatar" id="accountChipAvatar" aria-hidden="true">?</span>
+          <span class="account-chip-copy">
+            <strong id="accountChipLabel">ยังไม่เข้าสู่ระบบ</strong>
+            <small id="accountChipStatus">ข้อมูลอยู่ในเครื่อง</small>
+          </span>
+          <span class="sync-indicator local" id="accountChipIndicator" aria-hidden="true"></span>
+        </button>
+      </div>
+    </header>
+
+    <section class="page-view active" id="page-calculator">
+    <div class="workspace">
+      <section class="panel form-panel">
+        <div class="section">
+          <div class="section-head"><div class="step">1</div><h2>ข้อมูลเส้นทาง</h2></div>
+          <div class="grid4">
+            <div class="field">
+              <label><span>ระยะทางต่อเที่ยว</span></label>
+              <div class="field-box"><input id="distance" aria-label="ระยะทางต่อเที่ยว กิโลเมตร" type="number" min="0" value="250"><span class="unit">กม.</span></div>
+            </div>
+            <div class="field">
+              <label><span>ไป - กลับ</span></label>
+              <div class="field-box switch-wrap">
+                <label class="switch"><input id="roundTrip" type="checkbox" checked><span class="slider"></span></label>
+              </div>
+            </div>
+            <div class="field">
+              <label><span>ระยะทางรวม</span></label>
+              <div class="field-box"><input id="totalDistanceInput" aria-label="ระยะทางรวม กิโลเมตร" value="500" readonly><span class="unit">กม.</span></div>
+            </div>
+            <div class="field">
+              <label><span>จำนวนเที่ยว</span></label>
+              <div class="field-box"><input id="trips" aria-label="จำนวนเที่ยว" type="number" min="1" value="1"><span class="unit">เที่ยว</span></div>
+            </div>
+            <div class="field">
+              <label><span>จำนวนผู้โดยสาร</span></label>
+              <div class="field-box"><input id="passengers" aria-label="จำนวนผู้โดยสาร" type="number" min="1" value="2"><span class="unit">คน</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><div class="step">2</div><h2>ประเภทรถและอัตราสิ้นเปลือง</h2></div>
+          <div class="vehicle-caption">เลือกโมเดลรถ 3D ที่จะแสดงบนแดชบอร์ด</div>
+          <div class="vehicle-selector" id="vehicleSelector">
+            <button class="vehicle-option active" data-vehicle="sedan"><strong>Sedan</strong><span>รถเก๋ง</span></button>
+            <button class="vehicle-option" data-vehicle="suv"><strong>SUV</strong><span>อเนกประสงค์</span></button>
+            <button class="vehicle-option" data-vehicle="pickup"><strong>Pickup</strong><span>รถกระบะ</span></button>
+            <button class="vehicle-option" data-vehicle="van"><strong>Van</strong><span>รถตู้ / MPV</span></button>
+            <button class="vehicle-option" data-vehicle="hybrid"><strong>Hybrid</strong><span>ไฮบริด</span></button>
+            <button class="vehicle-option" data-vehicle="ev"><strong>EV</strong><span>รถไฟฟ้า</span></button>
+          </div>
+          <div class="power-tabs" id="powerTabs">
+            <button class="active" data-mode="fuel">น้ำมัน</button>
+            <button data-mode="diesel">ดีเซล</button>
+            <button data-mode="lpg">LPG</button>
+            <button data-mode="ngv">NGV</button>
+            <button data-mode="hybrid">ไฮบริด</button>
+            <button data-mode="ev">EV</button>
+          </div>
+          <div class="grid3">
+            <div class="field">
+              <label><span>ประเภทเชื้อเพลิง</span></label>
+              <div class="field-box">
+                <select id="energyType" aria-label="ชนิดพลังงาน">
+                  <option>เบนซิน 95</option><option>แก๊สโซฮอล์ 95</option><option>E20</option><option>E85</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label><span>อัตราสิ้นเปลือง</span></label>
+              <div class="field-box"><input id="efficiency" aria-label="อัตราสิ้นเปลืองพลังงาน" type="number" value="15"><span class="unit" id="effUnit">กม./ลิตร</span></div>
+            </div>
+            <div class="field">
+              <label><span>ราคาพลังงาน</span></label>
+              <div class="field-box"><input id="energyPrice" aria-label="ราคาพลังงานต่อหน่วย" type="number" value="42.50" step=".01"><span class="unit" id="priceUnit">บาท/ลิตร</span></div>
+              <div class="inline-source-note" id="inlinePriceSource">
+                <span class="source-dot sample" aria-hidden="true"></span>
+                <span id="inlinePriceSourceText">ข้อมูลตัวอย่างของระบบ</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head"><div class="step">3</div><h2>ค่าใช้จ่ายอื่น ๆ</h2></div>
+          <div class="grid3">
+            <div class="field">
+              <label><span>ค่าทางด่วน</span></label>
+              <div class="field-box"><input id="toll" aria-label="ค่าทางด่วน" type="number" value="100"><span class="unit">บาท</span></div>
+            </div>
+            <div class="field">
+              <label><span>ค่าจอดรถ</span></label>
+              <div class="field-box"><input id="parking" aria-label="ค่าจอดรถ" type="number" value="50"><span class="unit">บาท</span></div>
+            </div>
+            <div class="field">
+              <label><span>ค่าใช้จ่ายอื่น ๆ</span></label>
+              <div class="field-box"><input id="other" aria-label="ค่าใช้จ่ายอื่น" type="number" value="0"><span class="unit">บาท</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">
+            <div class="step">4</div><h2>ปัจจัยปรับสภาพการขับขี่</h2><small>(ปรับตามสภาพจริง)</small>
+          </div>
+          <div class="grid4">
+            <div class="factor-card"><label>ล้อและยาง</label><select id="wheel" aria-label="ขนาดล้อและยาง"><option value="0">มาตรฐาน</option><option value="5" selected>+5%</option><option value="10">+10%</option><option value="15">+15%</option></select></div>
+            <div class="factor-card"><label>น้ำหนักบรรทุก</label><select id="load" aria-label="น้ำหนักบรรทุก"><option value="0">ไม่มี</option><option value="5">+5%</option><option value="10" selected>+10%</option><option value="20">+20%</option></select></div>
+            <div class="factor-card"><label>จูนเครื่องยนต์</label><select id="tune" aria-label="การปรับแต่งเครื่องยนต์"><option value="-5">-5%</option><option value="0">มาตรฐาน</option><option value="8" selected>+8%</option><option value="15">+15%</option></select></div>
+            <div class="factor-card"><label>สภาพการจราจร</label><select id="traffic" aria-label="สภาพการจราจร"><option value="0">คล่องตัว</option><option value="10">ติดขัดเล็กน้อย</option><option value="15" selected>รถติดปานกลาง</option><option value="30">รถติดหนัก</option></select></div>
+            <div class="factor-card"><label>ทางชัน</label><select id="hill" aria-label="ลักษณะเส้นทาง"><option value="0">ทางราบ</option><option value="5" selected>ทางชันปานกลาง</option><option value="12">ทางชันมาก</option></select></div>
+            <div class="factor-card"><label>เครื่องปรับอากาศ</label><select id="ac" aria-label="การใช้เครื่องปรับอากาศ"><option value="0">ปิดแอร์</option><option value="5" selected>เปิดแอร์</option><option value="10">แอร์ทำงานหนัก</option></select></div>
+            <div class="factor-total"><span>ตัวคูณรวม</span><strong id="factorValue">1.43×</strong><span id="factorSub">สิ้นเปลืองเพิ่ม 43%</span></div>
+          </div>
+          <button class="calc-btn" id="calcBtn">▣ &nbsp; คำนวณค่าใช้จ่าย</button>
+        </div>
+      </section>
+
+      <aside class="panel result-panel">
+        <h2 class="result-title">ผลการคำนวณ</h2>
+        <div class="hero">
+          <div class="hero-copy">
+            <small>ต้นทุนรวมทั้งหมด</small>
+            <div class="hero-amount" id="totalCost">1,191.11 <span>บาท</span></div>
+            <div class="vehicle-label" id="vehicleLabel">Sedan 3D • Dark Metallic</div>
+          </div>
+          <div class="vehicle-stage" id="vehicleStage" data-vehicle="sedan" aria-hidden="true">
+            <img class="vehicle-image" id="vehicleImage" src="/assets/sedan-3d.webp" alt="">
+          </div>
+        </div>
+
+        <div class="trust-bar" aria-label="ข้อมูลความน่าเชื่อถือของผลลัพธ์">
+          <div class="trust-source">
+            <span class="trust-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+            <div>
+              <small>แหล่งราคาที่ใช้</small>
+              <strong id="currentPriceSource">ข้อมูลตัวอย่างของระบบ</strong>
+              <span id="currentPriceUpdated">ไม่ใช่ราคาสด • ผู้ใช้แก้ไขได้</span>
+              <button type="button" class="inline-live-refresh" id="inlineLiveRefreshButton">อัปเดตราคาวันนี้</button>
+            </div>
+          </div>
+          <button type="button" class="formula-button" data-go-page="calculation-details" id="calculationDetailsButton">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h3M8 16h3M15 12v4M13 14h4"/></svg>
+            <span>ดูวิธีคำนวณ</span>
+          </button>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><span>ใช้พลังงานทั้งหมด</span><strong id="energyUsed">16.55 <em>ลิตร</em></strong></div>
+          <div class="kpi"><span>ระยะทางรวม</span><strong id="totalDistance">500 <em>กม.</em></strong></div>
+          <div class="kpi"><span>ต้นทุนต่อกิโลเมตร</span><strong id="costPerKm">2.38 <em>บาท/กม.</em></strong></div>
+          <div class="kpi"><span>ต้นทุนต่อคน</span><strong id="costPerPerson">595.56 <em>บาท/คน</em></strong></div>
+        </div>
+
+        <div class="breakdown">
+          <h3>สัดส่วนค่าใช้จ่าย</h3>
+          <div class="chart-wrap">
+            <div class="donut" id="donut"></div>
+            <div class="legend">
+              <div class="legend-row"><i style="background:var(--blue)"></i><span>พลังงาน</span><strong id="legendEnergy">87.5%</strong></div>
+              <div class="legend-row"><i style="background:var(--green)"></i><span>ค่าทางด่วน</span><strong id="legendToll">8.4%</strong></div>
+              <div class="legend-row"><i style="background:var(--orange)"></i><span>ค่าจอดรถ</span><strong id="legendParking">4.2%</strong></div>
+              <div class="legend-row"><i style="background:#3b82a3"></i><span>อื่น ๆ</span><strong id="legendOther">0%</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight">
+          <strong>☼ Insight</strong>
+          <p id="insightText">หากลดสภาพการจราจรจาก “รถติดปานกลาง” เป็น “รถติดน้อย” จะช่วยประหยัดได้ประมาณ</p>
+          <div class="save-pill"><span>↗ ประหยัดได้</span><strong id="savingValue">118.35 บาท</strong></div>
+        </div>
+
+        <div class="bottom-actions">
+          <button class="btn" id="saveBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l2 2v16H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg> บันทึก</button>
+          <button class="btn" id="printBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg> PDF</button>
+          <button class="btn" id="csvBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg> CSV</button>
+          <button class="btn" id="shareBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="19" r="2"/><path d="m8 11 8-5M8 13l8 5"/></svg> แชร์</button>
+        </div>
+        <div class="footer-date" id="dateStamp"></div>
+      </aside>
+    </div>
+
+  </section>
+
+  <section class="page-view" id="page-scenarios">
+    <div class="panel page-panel">
+      <div class="page-panel-head"><div><h2>สถานการณ์ที่บันทึกไว้</h2><p>เปิด ลบ หรือกลับมาแก้ไขรายการเดิมได้</p></div>
+      <button type="button" class="btn btn-primary" id="newScenarioBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> สร้างจากค่าปัจจุบัน</button></div>
+      <div id="scenarioList" class="list"></div>
+    </div>
+  </section>
+
+  <section class="page-view" id="page-vehicles">
+    <div class="panel page-panel">
+      <div class="page-panel-head"><div><h2>คลังรถ 3D</h2><p>เลือกรถเพื่อใช้งาน ภาพถูกลดฉากเทาและเงาสะท้อนส่วนเกินแล้ว</p></div></div>
+      <div class="fleet-grid"><article class="fleet-card" data-fleet="sedan">
+      <div class="fleet-visual"><img src="/assets/sedan-3d.webp" alt="รถ sedan"></div>
+      <div class="fleet-copy"><strong>Sedan</strong><span id="fleetMeta-sedan"></span></div>
+      <button type="button" class="mini-btn use-vehicle" data-use-vehicle="sedan">ใช้รถคันนี้</button>
+    </article><article class="fleet-card" data-fleet="suv">
+      <div class="fleet-visual"><img src="/assets/suv-3d.webp" alt="รถ suv"></div>
+      <div class="fleet-copy"><strong>SUV</strong><span id="fleetMeta-suv"></span></div>
+      <button type="button" class="mini-btn use-vehicle" data-use-vehicle="suv">ใช้รถคันนี้</button>
+    </article><article class="fleet-card" data-fleet="pickup">
+      <div class="fleet-visual"><img src="/assets/pickup-3d.webp" alt="รถ pickup"></div>
+      <div class="fleet-copy"><strong>Pickup</strong><span id="fleetMeta-pickup"></span></div>
+      <button type="button" class="mini-btn use-vehicle" data-use-vehicle="pickup">ใช้รถคันนี้</button>
+    </article><article class="fleet-card" data-fleet="van">
+      <div class="fleet-visual"><img src="/assets/van-3d.webp" alt="รถ van"></div>
+      <div class="fleet-copy"><strong>Van</strong><span id="fleetMeta-van"></span></div>
+      <button type="button" class="mini-btn use-vehicle" data-use-vehicle="van">ใช้รถคันนี้</button>
+    </article><article class="fleet-card" data-fleet="hybrid">
+      <div class="fleet-visual"><img src="/assets/hybrid-3d.webp" alt="รถ hybrid"></div>
+      <div class="fleet-copy"><strong>Hybrid</strong><span id="fleetMeta-hybrid"></span></div>
+      <button type="button" class="mini-btn use-vehicle" data-use-vehicle="hybrid">ใช้รถคันนี้</button>
+    </article><article class="fleet-card" data-fleet="ev">
+      <div class="fleet-visual"><img src="/assets/ev-3d.webp" alt="รถ ev"></div>
+      <div class="fleet-copy"><strong>EV</strong><span id="fleetMeta-ev"></span></div>
+      <button type="button" class="mini-btn use-vehicle" data-use-vehicle="ev">ใช้รถคันนี้</button>
+    </article></div>
+    </div>
+  </section>
+
+  <section class="page-view" id="page-compare">
+    <div class="panel page-panel">
+      <div class="page-panel-head"><div><h2>เปรียบเทียบค่าเดินทาง</h2><p>คำนวณรถสองประเภทบนระยะทางเดียวกัน</p></div></div>
+      <div class="grid3 compare-controls">
+        <div class="field"><label>รถคัน A</label><div class="field-box"><select id="compareA" aria-label="รถคันที่หนึ่งสำหรับเปรียบเทียบ"></select></div></div>
+        <div class="field"><label>รถคัน B</label><div class="field-box"><select id="compareB" aria-label="รถคันที่สองสำหรับเปรียบเทียบ"></select></div></div>
+        <div class="field"><label>ระยะทาง</label><div class="field-box"><input id="compareDistance" aria-label="ระยะทางสำหรับเปรียบเทียบ" type="number" min="1" value="500"><span class="unit">กม.</span></div></div>
+      </div>
+      <div class="compare-layout">
+        <article class="compare-card"><strong id="compareNameA"></strong><div class="compare-car"><img id="compareImageA" alt=""></div><span id="compareDetailA"></span><div class="compare-result" id="compareCostA"></div><div class="compare-bar"><i id="compareBarA"></i></div></article>
+        <article class="compare-card"><strong id="compareNameB"></strong><div class="compare-car"><img id="compareImageB" alt=""></div><span id="compareDetailB"></span><div class="compare-result" id="compareCostB"></div><div class="compare-bar"><i id="compareBarB"></i></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="page-view" id="page-history">
+    <div class="panel page-panel">
+      <div class="page-panel-head"><div><h2>ประวัติการคำนวณ</h2><p>ระบบบันทึกเมื่อกดปุ่มคำนวณ</p></div><button type="button" class="btn" id="clearHistoryBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"/></svg> ล้างประวัติ</button></div>
+      <div id="historyList" class="list"></div>
+    </div>
+  </section>
+
+  <section class="page-view" id="page-energy">
+    <div class="panel page-panel">
+      <div class="page-panel-head">
+        <div>
+          <h2>ราคาและแหล่งข้อมูลพลังงาน</h2>
+          <p>ทุกค่าราคาต้องระบุที่มา แอพจะไม่เรียกว่า “ราคาล่าสุด” จนกว่าจะเชื่อมแหล่งข้อมูลจริง</p>
+        </div>
+        <button type="button" class="btn btn-primary" id="savePricesBtn">
+          <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l2 2v16H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg>
+          บันทึกราคาและที่มา
+        </button>
+      </div>
+
+      <section class="live-price-console" aria-labelledby="livePriceTitle">
+        <div class="live-price-head">
+          <div class="live-price-title-wrap">
+            <span class="live-price-signal checking" id="livePriceSignal" aria-hidden="true"></span>
+            <div>
+              <span class="detail-eyebrow">Automatic price update</span>
+              <h3 id="livePriceTitle">ราคาน้ำมันวันนี้จาก OR</h3>
+              <p id="livePriceStatusText">ระบบอัปเดตให้อัตโนมัติ ไม่จำเป็นต้องกดปุ่มซ้ำ</p>
+            </div>
+          </div>
+
+          <div class="live-price-actions">
+            <label class="live-auto-toggle">
+              <input id="livePriceAutoToggle" type="checkbox" checked>
+              <span>อัปเดตอัตโนมัติ</span>
+            </label>
+            <button type="button" class="btn btn-primary" id="refreshLivePricesButton">
+              <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18 9a7 7 0 0 0-12-2M6 15a7 7 0 0 0 12 2"/></svg>
+              <span data-refresh-label>อัปเดตราคาตอนนี้</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="live-price-meta">
+          <div><span>ผู้ให้ข้อมูล</span><strong id="livePriceProvider">PTT OR OilPrice Web Service</strong></div>
+          <div><span>วันที่ราคามีผล</span><strong id="livePriceEffectiveAt">ยังไม่มีข้อมูล</strong></div>
+          <div><span>ดึงข้อมูลล่าสุด</span><strong id="livePriceFetchedAt">ยังไม่มีข้อมูล</strong></div>
+          <div><span>สถานะข้อมูล</span><strong id="livePriceFreshness">กำลังตรวจสอบ</strong></div>
+        </div>
+
+        <div class="live-price-grid" id="livePriceGrid">
+          <div class="live-price-empty">กำลังโหลดราคาน้ำมัน…</div>
+        </div>
+
+        <div class="live-price-footer">
+          <p id="livePriceDisclaimer">ราคาขายปลีกอาจแตกต่างตามพื้นที่ ภาษีท้องถิ่น และสถานีบริการ</p>
+          <a href="https://orapiweb.pttor.com/oilservice/OilPrice.asmx"
+             target="_blank" rel="noopener noreferrer">เปิดแหล่งข้อมูลทางการ</a>
+        </div>
+      </section>
+
+      <div class="source-disclaimer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg>
+        <div>
+          <strong>ระบบจะใช้ราคาสดเมื่อเชื่อมต่อสำเร็จ</strong>
+          <p>หากเปิดไฟล์โดยตรงหรืออินเทอร์เน็ตขัดข้อง แอพจะใช้ราคาที่แคชไว้ล่าสุด หรือให้ผู้ใช้กรอกและระบุแหล่งข้อมูลเอง</p>
+        </div>
+      </div>
+
+      <div class="price-grid provenance-grid" id="priceGrid"></div>
+    </div>
+  </section>
+
+  <section class="page-view" id="page-calculation-details">
+    <div class="calculation-details-layout">
+      <section class="panel page-panel calculation-main">
+        <div class="page-panel-head">
+          <div>
+            <span class="detail-eyebrow">Calculation breakdown</span>
+            <h2>รายละเอียดวิธีคำนวณ</h2>
+            <p>แสดงสูตร ค่าที่ใช้ และลำดับการคำนวณจากฟอร์มปัจจุบัน</p>
+          </div>
+          <button type="button" class="btn" data-go-page="calculator">
+            <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+            กลับหน้าเครื่องคำนวณ
+          </button>
+        </div>
+
+        <div class="calculation-audit-head">
+          <div>
+            <small>ผลลัพธ์ที่ตรวจสอบได้</small>
+            <strong id="detailTotalCost">0.00 บาท</strong>
+            <span id="detailCalculationTime">คำนวณจากข้อมูลปัจจุบัน</span>
+          </div>
+          <div class="formula-version">
+            <span>สูตรคำนวณ</span>
+            <strong>v1.2.0</strong>
+          </div>
+        </div>
+
+        <div class="formula-steps" id="formulaSteps"></div>
+      </section>
+
+      <aside class="panel page-panel calculation-sidebar">
+        <div class="detail-side-section">
+          <h3>ข้อมูลที่ใช้</h3>
+          <div class="audit-list" id="calculationInputs"></div>
+        </div>
+
+        <div class="detail-side-section">
+          <h3>แหล่งราคาพลังงาน</h3>
+          <div class="source-audit-card">
+            <span class="source-status-badge" id="detailSourceBadge">ข้อมูลตัวอย่าง</span>
+            <strong id="detailSourceName">DriveCost Sample Data</strong>
+            <p id="detailSourceNote">ไม่มีการเชื่อมราคาสด</p>
+            <a id="detailSourceLink" href="#" target="_blank" rel="noopener noreferrer" hidden>เปิดแหล่งข้อมูล</a>
+            <div class="source-audit-meta">
+              <span>อัปเดต</span><strong id="detailSourceUpdated">ยังไม่มีการแก้ไข</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-side-section">
+          <h3>ข้อจำกัดของผลลัพธ์</h3>
+          <ul class="limitation-list">
+            <li>เป็นค่าประมาณจากอัตราสิ้นเปลืองและปัจจัยที่ผู้ใช้กรอก</li>
+            <li>สภาพรถ อากาศ ความเร็ว และพฤติกรรมการขับอาจทำให้ผลต่างจากความจริง</li>
+            <li>ควรใช้ราคาพลังงานและอัตราสิ้นเปลืองจากการใช้งานจริงเมื่อต้องการความแม่นยำสูง</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  
+
+<section class="page-view" id="page-account">
+  <div class="simple-account-shell">
+    <section class="panel simple-account-panel">
+      <div class="simple-account-brand">
+        <div class="simple-account-logo" aria-hidden="true"
+         style="width:54px;height:54px;min-width:54px;display:grid;place-items:center;border-radius:16px;
+                background:linear-gradient(145deg,rgba(19,214,187,.18),rgba(36,130,255,.14));
+                border:1px solid rgba(19,214,187,.3);color:#13d6bb;font:900 22px/1 system-ui">
+      D
+    </div>
+        <div>
+          <span>DRIVECOST ACCOUNT</span>
+          <h2>ข้อมูลของคุณ ไปกับคุณทุกอุปกรณ์</h2>
+          <p>เข้าสู่ระบบครั้งเดียว ระบบจะบันทึกสถานการณ์ ประวัติ ราคา และการตั้งค่าให้อัตโนมัติ</p>
+        </div>
+      </div>
+
+      <div class="simple-account-status">
+        <span class="sync-indicator local" id="accountPageIndicator" aria-hidden="true"></span>
+        <div>
+          <strong id="accountPageStatus">ข้อมูลอยู่ในเครื่อง</strong>
+          <small id="accountPageStatusDetail">เข้าสู่ระบบเพื่อสำรองข้อมูล</small>
+        </div>
+      </div>
+
+      <div id="accountSetupState" class="account-state" hidden>
+        <div class="account-unavailable-card">
+          <span class="account-unavailable-icon" aria-hidden="true">!</span>
+          <div>
+            <strong>ระบบบัญชียังไม่เปิดใช้งาน</strong>
+            <p>ผู้ดูแลแอพต้องเชื่อม Supabase ก่อน ผู้ใช้งานทั่วไปไม่ต้องกรอกค่าเหล่านี้</p>
+          </div>
+        </div>
+
+        <details class="developer-setup">
+          <summary>การตั้งค่าสำหรับผู้พัฒนา</summary>
+          <form id="supabaseSetupForm" class="account-form" novalidate>
+            <div class="field">
+              <label for="supabaseProjectUrl">Supabase Project URL</label>
+              <div class="field-box"><input id="supabaseProjectUrl" type="url" autocomplete="url" placeholder="https://xxxx.supabase.co" required></div>
+            </div>
+            <div class="field">
+              <label for="supabasePublishableKey">Publishable key</label>
+              <div class="field-box"><input id="supabasePublishableKey" type="password" autocomplete="off" placeholder="sb_publishable_..." required></div>
+            </div>
+            <div class="account-form-actions">
+              <a class="btn" href="supabase/schema.sql" target="_blank" rel="noopener">เปิด SQL Schema</a>
+              <button class="btn btn-primary" id="saveSupabaseConfigButton" type="submit">บันทึกการเชื่อมต่อ</button>
+            </div>
+          </form>
+        </details>
+      </div>
+
+      <div id="accountSignedOutState" class="account-state" hidden>
+        <div class="simple-auth-tabs" role="tablist" aria-label="บัญชีผู้ใช้">
+          <button type="button" class="active" data-auth-tab="signin" role="tab" aria-selected="true">เข้าสู่ระบบ</button>
+          <button type="button" data-auth-tab="signup" role="tab" aria-selected="false">สมัครสมาชิก</button>
+          <button type="button" data-auth-tab="reset" role="tab" aria-selected="false">ลืมรหัสผ่าน</button>
+        </div>
+
+        <form id="signInForm" class="simple-auth-form auth-form active" data-auth-panel="signin" novalidate>
+          <div class="field">
+            <label for="signInEmail">อีเมล</label>
+            <div class="field-box"><input id="signInEmail" type="email" autocomplete="email" placeholder="name@example.com" required></div>
+          </div>
+          <div class="field">
+            <label for="signInPassword">รหัสผ่าน</label>
+            <div class="field-box"><input id="signInPassword" type="password" autocomplete="current-password" minlength="8" placeholder="อย่างน้อย 8 ตัวอักษร" required></div>
+          </div>
+          <button class="btn btn-primary simple-auth-submit" type="submit">เข้าสู่ระบบ</button>
+        </form>
+
+        <form id="signUpForm" class="simple-auth-form auth-form" data-auth-panel="signup" novalidate hidden>
+          <div class="field">
+            <label for="signUpName">ชื่อที่แสดง</label>
+            <div class="field-box"><input id="signUpName" autocomplete="name" maxlength="80" placeholder="ชื่อของคุณ" required></div>
+          </div>
+          <div class="field">
+            <label for="signUpEmail">อีเมล</label>
+            <div class="field-box"><input id="signUpEmail" type="email" autocomplete="email" placeholder="name@example.com" required></div>
+          </div>
+          <div class="field">
+            <label for="signUpPassword">รหัสผ่าน</label>
+            <div class="field-box"><input id="signUpPassword" type="password" autocomplete="new-password" minlength="8" placeholder="อย่างน้อย 8 ตัวอักษร" required></div>
+          </div>
+          <button class="btn btn-primary simple-auth-submit" type="submit">สร้างบัญชี</button>
+          <p class="simple-auth-note">เมื่อสมัครสำเร็จ ระบบจะเข้าสู่ระบบและเริ่มบันทึกข้อมูลอัตโนมัติ</p>
+        </form>
+
+        <form id="resetPasswordForm" class="simple-auth-form auth-form" data-auth-panel="reset" novalidate hidden>
+          <div class="field">
+            <label for="resetEmail">อีเมลของบัญชี</label>
+            <div class="field-box"><input id="resetEmail" type="email" autocomplete="email" placeholder="name@example.com" required></div>
+          </div>
+          <button class="btn btn-primary simple-auth-submit" type="submit">ส่งลิงก์ตั้งรหัสผ่านใหม่</button>
+          <p class="simple-auth-note">ระบบจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปยังอีเมลนี้</p>
+        </form>
+
+        <div class="simple-account-trust">
+          <div><span aria-hidden="true">✓</span><p><strong>บันทึกอัตโนมัติ</strong><small>ไม่ต้องกดซิงก์เอง</small></p></div>
+          <div><span aria-hidden="true">✓</span><p><strong>ใช้งานข้ามอุปกรณ์</strong><small>เปิดข้อมูลเดิมได้หลังเข้าสู่ระบบ</small></p></div>
+          <div><span aria-hidden="true">✓</span><p><strong>ออฟไลน์ได้</strong><small>ระบบจะส่งข้อมูลเมื่อกลับมาออนไลน์</small></p></div>
+        </div>
+      </div>
+
+      <div id="accountRecoveryState" class="account-state" hidden>
+        <div class="simple-recovery-head">
+          <span aria-hidden="true">🔐</span>
+          <div><strong>ตั้งรหัสผ่านใหม่</strong><p>กรอกรหัสผ่านใหม่สำหรับบัญชีของคุณ</p></div>
+        </div>
+        <form id="updatePasswordForm" class="simple-auth-form" novalidate>
+          <div class="field"><label for="newPassword">รหัสผ่านใหม่</label><div class="field-box"><input id="newPassword" type="password" autocomplete="new-password" minlength="8" required></div></div>
+          <div class="field"><label for="confirmNewPassword">ยืนยันรหัสผ่านใหม่</label><div class="field-box"><input id="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" required></div></div>
+          <button class="btn btn-primary simple-auth-submit" type="submit">บันทึกรหัสผ่านใหม่</button>
+        </form>
+      </div>
+
+      <div id="accountSignedInState" class="account-state" hidden>
+        <div class="simple-signed-in-card">
+          <span class="account-profile-avatar" id="accountProfileAvatar">D</span>
+          <div class="signed-in-copy">
+            <span>บัญชีของฉัน</span>
+            <h3 id="accountDisplayName">ผู้ใช้ DriveCost</h3>
+            <p id="accountEmail">—</p>
+          </div>
+          <button type="button" class="btn" id="signOutButton">ออกจากระบบ</button>
+        </div>
+
+        <div id="accountOwnershipWarning" class="simple-account-warning" hidden>
+          <div>
+            <strong>พบข้อมูลจากบัญชีอื่นในอุปกรณ์นี้</strong>
+            <p>เลือกวิธีจัดการก่อน เพื่อป้องกันข้อมูลคนละบัญชีถูกรวมกัน</p>
+          </div>
+          <div class="ownership-actions">
+            <button type="button" class="btn" id="useCloudDataButton">ใช้ข้อมูลบัญชีนี้</button>
+            <button type="button" class="btn btn-primary" id="mergeLocalDataButton">เก็บข้อมูลในเครื่องนี้ด้วย</button>
+          </div>
+        </div>
+
+        <div class="simple-save-overview">
+          <article>
+            <span class="simple-save-icon saved" aria-hidden="true">✓</span>
+            <div><small>สถานะข้อมูล</small><strong id="syncDashboardStatus">กำลังตรวจสอบ</strong><span id="syncDashboardMessage">—</span></div>
+          </article>
+          <article>
+            <span class="simple-save-icon" aria-hidden="true">↻</span>
+            <div><small>บันทึกล่าสุด</small><strong id="lastSyncValue">ยังไม่เคย</strong><span>ระบบบันทึกให้อัตโนมัติ</span></div>
+          </article>
+          <article>
+            <span class="simple-save-icon" aria-hidden="true">☁</span>
+            <div><small>การทำงานออฟไลน์</small><strong id="offlineSaveStatus">พร้อมใช้งาน</strong><span id="pendingSyncLabel">บันทึกเข้าบัญชีโดยตรง</span></div>
+          </article>
+          <span id="pendingSyncValue" hidden>0</span>
+        </div>
+
+
+        <div class="simple-account-scope-card">
+          <span class="simple-save-icon" aria-hidden="true">🔒</span>
+          <div>
+            <small>พื้นที่ข้อมูลส่วนตัว</small>
+            <strong id="accountDataScope">แยกเฉพาะบัญชีนี้</strong>
+            <span>บัญชีอื่นที่ใช้เบราว์เซอร์นี้จะไม่เห็นรายการของคุณ</span>
+          </div>
+        </div>
+
+        <div class="simple-auto-save-card">
+          <div>
+            <span class="auto-save-pulse" aria-hidden="true"></span>
+            <div><strong>บันทึกข้อมูลอัตโนมัติ</strong><p>สถานการณ์ ประวัติ ราคา และการตั้งค่าจะถูกเก็บไว้ในบัญชีนี้</p></div>
+          </div>
+          <button type="button" class="btn btn-primary" id="syncNowButton">บันทึกตอนนี้</button>
+        </div>
+
+        <div class="simple-data-list">
+          <div><span>สถานการณ์ที่บันทึก</span><strong>เก็บในบัญชี</strong></div>
+          <div><span>ประวัติการคำนวณ</span><strong>เก็บในบัญชี</strong></div>
+          <div><span>ราคาและการตั้งค่า</span><strong>เก็บในบัญชี</strong></div>
+        </div>
+
+        <span id="deviceIdValue" hidden>—</span>
+      </div>
+
+      <div id="accountMessage" class="account-message" role="status" aria-live="polite" hidden></div>
+    </section>
+  </div>
+</section>
+
+<section class="page-view" id="page-settings">
+    <div class="panel page-panel">
+      <div class="page-panel-head"><div><h2>ตั้งค่า</h2><p>ตั้งค่าในเครื่อง และเลือกซิงก์ผ่านบัญชีได้</p></div><button type="button" class="btn" data-go-page="account">บัญชีของฉัน</button></div>
+      <div class="setting-row"><div><strong>ลดภาพเคลื่อนไหว</strong><span>เพิ่มความลื่นและลดเอฟเฟกต์การเปลี่ยนหน้า</span></div><label class="switch"><input id="reduceMotion" type="checkbox"><span class="slider"></span></label></div>
+      <div class="setting-row"><div><strong>บันทึกร่างอัตโนมัติ</strong><span>เรียกคืนค่าฟอร์มล่าสุดเมื่อเปิดแอพใหม่</span></div><label class="switch"><input id="autoDraft" type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="setting-row"><div><strong>อัปเดตราคาน้ำมันอัตโนมัติ</strong><span>ดึงราคาจาก OR เมื่อเปิดแอพและเมื่อข้อมูลเก่ากว่า 30 นาที</span></div><label class="switch"><input id="settingsLivePriceAuto" type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="setting-row"><div><strong>ล้างข้อมูลทั้งหมด</strong><span>ลบสถานการณ์ ประวัติ ราคา และการตั้งค่า</span></div><button type="button" class="btn" id="resetDataBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"/></svg> ล้างข้อมูล</button></div>
+    </div>
+  </section>
+
+  <section class="page-view" id="page-guide">
+    <div class="panel page-panel">
+      <div class="page-panel-head"><div><h2>คู่มือการใช้งาน</h2><p>ขั้นตอนหลักเพื่อให้ได้ผลลัพธ์ใกล้เคียงการใช้งานจริง</p></div></div>
+      <div class="guide-grid">
+        <article class="guide-card"><b>1</b><h3>เลือกรถและพลังงาน</h3><p>เลือกรูปทรงรถ จากนั้นตรวจสอบระบบพลังงานและอัตราสิ้นเปลือง</p></article>
+        <article class="guide-card"><b>2</b><h3>กรอกระยะทาง</h3><p>ใส่ระยะทาง จำนวนเที่ยว ไป-กลับ และจำนวนผู้โดยสาร</p></article>
+        <article class="guide-card"><b>3</b><h3>ปรับสภาพใช้งานจริง</h3><p>ล้อ น้ำหนัก การจูน รถติด ทางชัน และแอร์มีผลต่อการใช้พลังงาน</p></article>
+        <article class="guide-card"><b>4</b><h3>บันทึกและเปรียบเทียบ</h3><p>บันทึกสถานการณ์ ส่งออก CSV พิมพ์รายงาน หรือเปรียบเทียบรถสองแบบ</p></article>
+      </div>
+    </div>
+  </section>
+
+  
+<div class="production-admin-entry" id="productionAdminEntry" hidden>
+  <a href="/admin" rel="nofollow">ศูนย์ตรวจสอบระบบสำหรับผู้ดูแล</a>
+</div>
+
+</main>
+</div>
+
+<nav class="mobile-nav" aria-label="เมนูมือถือ">
+  <button type="button" class="active" data-page="calculator"><svg class="mobile-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8v10h-6v-6H9v6H3z"/></svg><span>หน้าหลัก</span></button>
+  <button type="button" data-page="scenarios"><svg class="mobile-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 9h6M9 13h6M9 17h4"/></svg><span>สถานการณ์</span></button>
+  <button type="button" class="plus" id="mobileSaveBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+  <button type="button" data-page="vehicles"><svg class="mobile-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14l1-4-2-4H6l-2 4 1 4Z"/><path d="M7 9l1-3h8l1 3M4 13h16"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg><span>รถของฉัน</span></button>
+  <button type="button" data-page="history"><svg class="mobile-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2M4.5 5.5 3 4"/></svg><span>ประวัติ</span></button>
+</nav>
+
+<div class="modal-backdrop" id="saveModal">
+  <div class="modal">
+    <h3>บันทึกสถานการณ์</h3>
+    <p>ตั้งชื่อให้จำง่าย เช่น “กระบะไปไซต์งาน”</p>
+    <div class="field-box"><input id="scenarioName" aria-label="ชื่อสถานการณ์" placeholder="ชื่อสถานการณ์"></div>
+    <div class="modal-actions"><button type="button" class="btn" id="cancelSaveBtn">ยกเลิก</button><button type="button" class="btn btn-primary" id="confirmSaveBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h12l2 2v16H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg> บันทึก</button></div>
+  </div>
+</div>
+
+<div class="utility-backdrop" id="utilityBackdrop" hidden></div>
+
+<aside class="utility-panel" id="accessibilityPanel" role="dialog" aria-modal="true"
+       aria-labelledby="accessibilityTitle" aria-hidden="true">
+  <div class="utility-panel-head">
+    <div>
+      <span class="panel-eyebrow">Accessibility Center</span>
+      <h2 id="accessibilityTitle">การช่วยการเข้าถึง</h2>
+      <p>ปรับหน้าจอให้เหมาะกับการมองเห็น การควบคุม และเทคโนโลยีช่วยเหลือ</p>
+    </div>
+    <button type="button" class="icon-button panel-close" data-close-utility aria-label="ปิดแผงการช่วยการเข้าถึง">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+
+  <div class="utility-panel-body">
+    <section class="utility-section">
+      <div class="utility-section-title">
+        <div><strong>ขนาดข้อความและหน้าจอ</strong><span>ปรับทั้งข้อความ ปุ่ม และระยะห่างของหน้าจอ</span></div>
+      </div>
+      <div class="scale-selector" role="group" aria-label="ขนาดข้อความ">
+        <button type="button" data-text-scale="100">100%</button>
+        <button type="button" data-text-scale="115">115%</button>
+        <button type="button" data-text-scale="130">130%</button>
+      </div>
+    </section>
+
+    <section class="utility-section">
+      <label class="utility-setting">
+        <span class="setting-copy"><strong>คอนทราสต์สูง</strong><small>เพิ่มความต่างระหว่างตัวอักษร พื้นหลัง และเส้นขอบ</small></span>
+        <span class="a11y-switch"><input id="a11yHighContrast" type="checkbox"><span></span></span>
+      </label>
+      <label class="utility-setting">
+        <span class="setting-copy"><strong>ปุ่มและช่องกรอกขนาดใหญ่</strong><small>เพิ่มพื้นที่กดสำหรับการใช้งานด้วยนิ้วหรืออุปกรณ์ช่วยเหลือ</small></span>
+        <span class="a11y-switch"><input id="a11yLargeControls" type="checkbox"><span></span></span>
+      </label>
+      <label class="utility-setting">
+        <span class="setting-copy"><strong>กรอบโฟกัสแบบชัดเจน</strong><small>แสดงตำแหน่งที่เลือกด้วยคีย์บอร์ดให้เห็นเด่นขึ้น</small></span>
+        <span class="a11y-switch"><input id="a11yFocusMode" type="checkbox"><span></span></span>
+      </label>
+    </section>
+
+    <section class="utility-section">
+      <div class="utility-section-title">
+        <div><strong>ภาพเคลื่อนไหว</strong><span>เลือกให้ตรงกับความสบายในการใช้งาน</span></div>
+      </div>
+      <div class="motion-selector" role="radiogroup" aria-label="การลดภาพเคลื่อนไหว">
+        <label><input type="radio" name="motionPreference" value="system"><span>ตามอุปกรณ์</span></label>
+        <label><input type="radio" name="motionPreference" value="reduce"><span>ลดการเคลื่อนไหว</span></label>
+        <label><input type="radio" name="motionPreference" value="full"><span>แสดงตามปกติ</span></label>
+      </div>
+    </section>
+
+    <section class="utility-section">
+      <label class="utility-setting">
+        <span class="setting-copy"><strong>ประกาศผลสำหรับ Screen Reader</strong><small>แจ้งค่าเดินทาง ระยะทาง และต้นทุนต่อคนเมื่อกดคำนวณ</small></span>
+        <span class="a11y-switch"><input id="a11yAnnouncements" type="checkbox"><span></span></span>
+      </label>
+    </section>
+  </div>
+
+  <div class="utility-panel-footer">
+    <button type="button" class="btn" id="resetAccessibilityButton">คืนค่าเริ่มต้น</button>
+    <button type="button" class="btn btn-primary" data-close-utility>เสร็จสิ้น</button>
+  </div>
+</aside>
+
+<aside class="utility-panel" id="systemStatusPanel" role="dialog" aria-modal="true"
+       aria-labelledby="systemStatusTitle" aria-hidden="true">
+  <div class="utility-panel-head">
+    <div>
+      <span class="panel-eyebrow">System Status</span>
+      <h2 id="systemStatusTitle">สถานะระบบ</h2>
+      <p>ตรวจสอบการเชื่อมต่อ ไฟล์ออฟไลน์ ข้อมูลราคา และข้อมูลที่เก็บในเครื่อง</p>
+    </div>
+    <button type="button" class="icon-button panel-close" data-close-utility aria-label="ปิดแผงสถานะระบบ">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+    </button>
+  </div>
+
+  <div class="system-overview" id="systemOverview">
+    <span class="status-indicator checking" id="panelStatusIndicator" aria-hidden="true"></span>
+    <div><strong id="panelStatusTitle">กำลังตรวจสอบ</strong><small id="panelStatusDescription">กำลังอ่านสถานะของอุปกรณ์และแอพ</small></div>
+  </div>
+
+  <div class="utility-panel-body">
+    <div class="status-list">
+      <div class="status-row"><span>การเชื่อมต่อ</span><strong id="networkStatusValue">กำลังตรวจสอบ</strong></div>
+      <div class="status-row"><span>การใช้งานออฟไลน์</span><strong id="offlineStatusValue">กำลังตรวจสอบ</strong></div>
+      <div class="status-row"><span>โมเดลรถ 3D</span><strong id="vehicleAssetStatusValue">กำลังตรวจสอบ</strong></div>
+      <div class="status-row"><span>แหล่งข้อมูลราคา</span><strong id="priceSourceValue">ข้อมูลตัวอย่าง</strong></div>
+      <div class="status-row"><span>อัปเดตราคาล่าสุด</span><strong id="priceUpdatedValue">ยังไม่มีการแก้ไข</strong></div>
+      <div class="status-row"><span>ข้อมูลที่บันทึกในเครื่อง</span><strong id="localDataValue">0 รายการ</strong></div>
+      <div class="status-row"><span>พื้นที่จัดเก็บ</span><strong id="storageStatusValue">กำลังตรวจสอบ</strong></div>
+      <div class="status-row"><span>โหมดการเปิดแอพ</span><strong id="displayModeValue">เว็บเบราว์เซอร์</strong></div>
+      <div class="status-row"><span>เวอร์ชันแอพ</span><strong>2.5.3</strong></div>
+      <div class="status-row"><span>เวอร์ชันสูตรคำนวณ</span><strong>1.2.0</strong></div>
+    </div>
+
+    <div class="system-note">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg>
+      <p>ข้อมูลสถานการณ์ ประวัติ ราคา และการตั้งค่าถูกเก็บไว้ในอุปกรณ์นี้ แอพไม่ส่งตำแหน่งหรือข้อมูลรถออกจากเครื่องในเวอร์ชันนี้</p>
+    </div>
+  </div>
+
+  <div class="utility-panel-footer">
+    <button type="button" class="btn" id="refreshSystemStatusButton">
+      <svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5M4 18v-5h5"/><path d="M18 9a7 7 0 0 0-12-2M6 15a7 7 0 0 0 12 2"/></svg>
+      ตรวจสอบอีกครั้ง
+    </button>
+    <button type="button" class="btn btn-primary" id="checkUpdateButton">ตรวจสอบเวอร์ชัน</button>
+  </div>
+</aside>
+
+<div class="sr-only" id="screenReaderStatus" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="/core-app.js?v=3.0.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
+<script src="/runtime-config.js"></script>
+<script src="/supabase-config.js?v=3.0.0"></script>
+<script src="/account-sync.js?v=3.0.0"></script>
+<script src="/app-v2.js?v=3.0.0"></script>
+<script src="/accessibility-status.js?v=3.0.0"></script>
+<script src="/provenance-calculation.js?v=3.0.0"></script>
+<script src="/live-prices.js?v=3.0.0"></script>
+
+<script src="/ui-guard.js?v=3.0.0"></script>
+
+
+<div id="cleanBuildBadge"
+     style="position:fixed;right:10px;bottom:10px;z-index:9999;padding:6px 9px;border-radius:8px;
+            background:#0b2032;border:1px solid rgba(19,214,187,.35);color:#85f6e5;
+            font:700 10px/1.2 system-ui;box-shadow:0 8px 24px rgba(0,0,0,.25)">
+  v3.0.0 PRODUCTION
+</div>
+
+</body>
+</html>

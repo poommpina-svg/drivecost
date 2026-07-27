@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <CurrentOilPriceResponse xmlns="http://www.pttor.com">
+      <CurrentOilPriceResult><![CDATA[
+        <NewDataSet>
+          <Table>
+            <PRODUCT>Gasohol 95</PRODUCT>
+            <PRICE>36.69</PRICE>
+            <PRICE_DATE>2026-07-23T05:00:00+07:00</PRICE_DATE>
+          </Table>
+          <Table>
+            <PRODUCT>Gasohol E20</PRODUCT>
+            <PRICE>31.69</PRICE>
+            <PRICE_DATE>2026-07-23T05:00:00+07:00</PRICE_DATE>
+          </Table>
+          <Table>
+            <PRODUCT>Diesel B20</PRODUCT>
+            <PRICE>31.69</PRICE>
+            <PRICE_DATE>2026-07-23T05:00:00+07:00</PRICE_DATE>
+          </Table>
+          <Table>
+            <PRODUCT>Premium Diesel</PRODUCT>
+            <PRICE>50.05</PRICE>
+            <PRICE_DATE>2026-07-23T05:00:00+07:00</PRICE_DATE>
+          </Table>
+        </NewDataSet>
+      ]]></CurrentOilPriceResult>
+    </CurrentOilPriceResponse>
+  </soap:Body>
+</soap:Envelope>
