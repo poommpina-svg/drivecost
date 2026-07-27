@@ -25,7 +25,5 @@ services:
         sync: false
       - key: ADMIN_EMAILS
         sync: false
-      - key: ADMIN_USER_IDS
-        sync: false
       - key: IP_HASH_SALT
         generateValue: true
