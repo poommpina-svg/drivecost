@@ -38,12 +38,20 @@ async function main() {
   const child = spawn(process.execPath, ["server.js"], {
     cwd: root,
     env: {
-      ...process.env,
-      NODE_ENV: "test",
-      HOST: "127.0.0.1",
-      PORT: String(port),
-      ADMIN_DASHBOARD_ENABLED: "true"
-    },
+  ...process.env,
+  NODE_ENV: "test",
+  HOST: "127.0.0.1",
+  PORT: String(port),
+  ADMIN_DASHBOARD_ENABLED: "true",
+
+  SUPABASE_URL: "",
+  SUPABASE_PUBLISHABLE_KEY: "",
+  SUPABASE_ANON_KEY: "",
+  SUPABASE_SECRET_KEY: "",
+  SUPABASE_SERVICE_ROLE_KEY: "",
+  ADMIN_EMAILS: "",
+  ADMIN_USER_IDS: ""
+},
     stdio: ["ignore", "pipe", "pipe"]
   });
 
