@@ -1,220 +1,827 @@
 (() => {
+  "use strict";
+
+  const engine = window.DriveCostEngine;
+  if (!engine) {
+    console.error("DriveCostEngine is unavailable.");
+    return;
+  }
+
   const $ = id => document.getElementById(id);
+  const ACTUAL_RECORDS_KEY = "drivecost-v3-actual-fill-records";
+
   let mode = "fuel";
   let vehicle = "sedan";
+  let calculationMode = "actual";
+  let lastResult = null;
+  let previousPrimaryKind = "fuel";
+
   const vehicleData = {
-    sedan:{label:"Sedan 3D • Dark Metallic",image:"/assets/sedan-3d.webp",defaultMode:"fuel",eff:15},
-    suv:{label:"SUV 3D • Dark Metallic",image:"/assets/suv-3d.webp",defaultMode:"fuel",eff:10},
-    pickup:{label:"Pickup 3D • Dark Metallic",image:"/assets/pickup-3d.webp",defaultMode:"diesel",eff:11},
-    van:{label:"Van 3D • Silver Metallic",image:"/assets/van-3d.webp",defaultMode:"diesel",eff:9.5},
-    hybrid:{label:"Hybrid 3D • Pearl Silver",image:"/assets/hybrid-3d.webp",defaultMode:"hybrid",eff:22},
-    ev:{label:"EV 3D • Pearl White",image:"/assets/ev-3d.webp",defaultMode:"ev",eff:16}
+    sedan:  { name: "รถเก๋ง", label: "Sedan 3D • Dark Metallic", image: "/assets/sedan-3d.webp", defaultMode: "fuel", eff: 15, mass: 1350 },
+    suv:    { name: "SUV", label: "SUV 3D • Dark Metallic", image: "/assets/suv-3d.webp", defaultMode: "fuel", eff: 10, mass: 1750 },
+    pickup: { name: "รถกระบะ", label: "Pickup 3D • Dark Metallic", image: "/assets/pickup-3d.webp", defaultMode: "diesel", eff: 11, mass: 1900 },
+    van:    { name: "รถตู้ / MPV", label: "Van 3D • Silver Metallic", image: "/assets/van-3d.webp", defaultMode: "diesel", eff: 9.5, mass: 2100 },
+    hybrid: { name: "ไฮบริด", label: "Hybrid 3D • Pearl Silver", image: "/assets/hybrid-3d.webp", defaultMode: "hybrid", eff: 22, mass: 1500 },
+    ev:     { name: "รถไฟฟ้า", label: "EV 3D • Pearl White", image: "/assets/ev-3d.webp", defaultMode: "ev", eff: 16, mass: 1850 }
   };
+
   const energyData = {
-    fuel:{types:["เบนซิน 95","แก๊สโซฮอล์ 95","E20","E85"],eff:15,price:42.5,effUnit:"กม./ลิตร",priceUnit:"บาท/ลิตร"},
-    diesel:{types:["ดีเซล B7","ดีเซล B10","ดีเซลพรีเมียม"],eff:14,price:33.5,effUnit:"กม./ลิตร",priceUnit:"บาท/ลิตร"},
-    lpg:{types:["LPG"],eff:10,price:15.5,effUnit:"กม./ลิตร",priceUnit:"บาท/ลิตร"},
-    ngv:{types:["NGV"],eff:12,price:18.8,effUnit:"กม./กก.",priceUnit:"บาท/กก."},
-    hybrid:{types:["ไฮบริด เบนซิน","Plug-in Hybrid"],eff:22,price:42.5,effUnit:"กม./ลิตร",priceUnit:"บาท/ลิตร"},
-    ev:{types:["ไฟบ้าน","ชาร์จ AC","ชาร์จ DC"],eff:16,price:4.2,effUnit:"kWh/100 กม.",priceUnit:"บาท/kWh"}
+    fuel: {
+      name: "น้ำมันเบนซิน / แก๊สโซฮอล์",
+      types: ["E20", "แก๊สโซฮอล์ 95", "แก๊สโซฮอล์ 91", "เบนซิน 95", "E85"],
+      eff: 15,
+      price: 31.69,
+      effUnit: "กม./ลิตร",
+      priceUnit: "บาท/ลิตร"
+    },
+    diesel: {
+      name: "ดีเซล",
+      types: ["ดีเซล B7", "ดีเซล B10", "ดีเซล B20", "ดีเซลพรีเมียม"],
+      eff: 14,
+      price: 33.5,
+      effUnit: "กม./ลิตร",
+      priceUnit: "บาท/ลิตร"
+    },
+    lpg: {
+      name: "LPG",
+      types: ["LPG"],
+      eff: 10,
+      price: 15.5,
+      effUnit: "กม./ลิตร",
+      priceUnit: "บาท/ลิตร"
+    },
+    ngv: {
+      name: "NGV",
+      types: ["NGV"],
+      eff: 12,
+      price: 18.8,
+      effUnit: "กม./กก.",
+      priceUnit: "บาท/กก."
+    },
+    hybrid: {
+      name: "ไฮบริด",
+      types: ["ไฮบริด เบนซิน", "Plug-in Hybrid"],
+      eff: 22,
+      price: 31.69,
+      effUnit: "กม./ลิตร",
+      priceUnit: "บาท/ลิตร"
+    },
+    ev: {
+      name: "ไฟฟ้า",
+      types: ["ไฟบ้าน", "ชาร์จ AC", "ชาร์จ DC"],
+      eff: 16,
+      price: 4.2,
+      effUnit: "kWh/100 กม.",
+      priceUnit: "บาท/kWh"
+    }
   };
-  const ids = ["distance","roundTrip","trips","passengers","efficiency","energyPrice","toll","parking","other","wheel","load","tune","traffic","hill","ac"];
 
-  function n(id){ const v=parseFloat($(id).value); return Number.isFinite(v)?v:0; }
-  function fmt(v,d=2){ return Number(v||0).toLocaleString("th-TH",{minimumFractionDigits:d,maximumFractionDigits:d}); }
-  function toast(msg){ const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("show"),1600); }
+  const inputIds = [
+    "energyType", "efficiency", "energyPrice",
+    "actualUseDirectDistance", "actualOdometerStart", "actualOdometerEnd",
+    "actualDirectDistance", "actualSource1Type", "actualSource1Quantity",
+    "actualSource1Cost", "actualSource2Type", "actualSource2Quantity",
+    "actualSource2Cost", "actualSource3Type", "actualSource3Quantity",
+    "actualSource3Cost", "actualFillMethod", "actualRecordNote",
+    "estimateDistance", "estimateDriverPreset", "estimateDriverCustom",
+    "mountainDistance", "mountainAscent", "mountainDescent",
+    "mountainVehicleMass", "mountainPayload", "mountainMaxGrade",
+    "mountainDriverPreset", "mountainDriverCustom", "mountainTraffic",
+    "mountainAc", "mountainRoad"
+  ];
 
-  function setMode(next,syncVehicle=true){
-    mode=next;
-    window.dispatchEvent(new CustomEvent("drivecost:modechange",{detail:{mode}}));
-    document.querySelectorAll("#powerTabs button").forEach(b=>b.classList.toggle("active",b.dataset.mode===mode));
-    const d=energyData[mode];
-    $("energyType").innerHTML=d.types.map(x=>`<option>${x}</option>`).join("");
-    $("efficiency").value=d.eff;
-    $("energyPrice").value=d.price;
-    $("effUnit").textContent=d.effUnit;
-    $("priceUnit").textContent=d.priceUnit;
+  function number(id, fallback = 0) {
+    const value = Number.parseFloat($(id)?.value);
+    return Number.isFinite(value) ? value : fallback;
+  }
 
-    if(syncVehicle && (mode==="hybrid" || mode==="ev")){
-      setVehicle(mode,false);
+  function fmt(value, digits = 2) {
+    return Number(value || 0).toLocaleString("th-TH", {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits
+    });
+  }
+
+  function parse(value, fallback) {
+    if (!value) return fallback;
+    try {
+      const result = JSON.parse(value);
+      return result ?? fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function storageGet(key) {
+    try { return localStorage.getItem(key); }
+    catch { return null; }
+  }
+
+  function storageSet(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function toast(message) {
+    const element = $("toast");
+    if (!element) return;
+    element.textContent = message;
+    element.classList.add("show");
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(() => element.classList.remove("show"), 1800);
+  }
+
+  function actualRecords() {
+    const records = parse(storageGet(ACTUAL_RECORDS_KEY), []);
+    return Array.isArray(records) ? records : [];
+  }
+
+  function driverProfile() {
+    return engine.buildDriverProfile(actualRecords(), vehicle, mode);
+  }
+
+  function driverFactor(presetId, customId) {
+    const preset = $(presetId)?.value || "normal";
+    const profile = driverProfile();
+
+    if (preset === "learned") return profile.available ? profile.factor : 1;
+    if (preset === "smooth") return 0.92;
+    if (preset === "heavy") return 1.15;
+    if (preset === "custom") {
+      return Math.min(1.7, Math.max(0.65, 1 + number(customId) / 100));
+    }
+    return 1;
+  }
+
+  function primarySourceKind(nextMode = mode) {
+    return engine.energyKindForMode(nextMode);
+  }
+
+  function updateSourceUnits() {
+    [1, 2, 3].forEach(index => {
+      const kind = $(`actualSource${index}Type`)?.value || "";
+      const unit = engine.ENERGY[kind]?.unit || "—";
+      const unitElement = $(`actualSource${index}Unit`);
+      if (unitElement) unitElement.textContent = unit;
+    });
+  }
+
+  function updateActualDistance() {
+    const direct = $("actualUseDirectDistance")?.checked;
+    const start = number("actualOdometerStart");
+    const end = number("actualOdometerEnd");
+    const distance = direct
+      ? Math.max(0, number("actualDirectDistance"))
+      : Math.max(0, end - start);
+
+    if ($("odometerFields")) $("odometerFields").hidden = direct;
+    if ($("directDistanceField")) $("directDistanceField").hidden = !direct;
+    if ($("actualDistanceOutput")) $("actualDistanceOutput").textContent = fmt(distance, 1);
+    return distance;
+  }
+
+  function renderDriverProfile() {
+    const profile = driverProfile();
+    if ($("driverProfileLabel")) $("driverProfileLabel").textContent = profile.label;
+    if ($("driverProfileDetail")) $("driverProfileDetail").textContent = profile.detail;
+    if ($("driverProfileFactor")) $("driverProfileFactor").textContent = `${fmt(profile.factor, 3)}×`;
+    if ($("driverProfileCard")) {
+      $("driverProfileCard").dataset.available = profile.available ? "true" : "false";
+    }
+  }
+
+  function renderActualRecords() {
+    const root = $("actualRecordsList");
+    if (!root) return;
+
+    const records = actualRecords()
+      .sort((a, b) => Date.parse(b.createdAt || "") - Date.parse(a.createdAt || ""))
+      .slice(0, 8);
+
+    root.textContent = "";
+
+    if (!records.length) {
+      const empty = document.createElement("div");
+      empty.className = "actual-record-empty";
+      empty.textContent = "ยังไม่มีบันทึกเติมจริง";
+      root.append(empty);
       return;
     }
+
+    records.forEach(record => {
+      const row = document.createElement("article");
+      row.className = "actual-record-row";
+
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      const detail = document.createElement("span");
+      title.textContent = `${fmt(record.total, 2)} บาท • ${fmt(record.totalDistance, 1)} กม.`;
+      detail.textContent = `${fmt(record.perKm, 2)} บาท/กม. • ${
+        record.calibration
+          ? `เรียนรู้ ${fmt(record.calibration.factor, 3)}×`
+          : "ไม่ใช้เรียนรู้"
+      } • ${new Date(record.createdAt).toLocaleString("th-TH")}`;
+      copy.append(title, detail);
+
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "mini-btn danger";
+      remove.dataset.deleteActualRecord = String(record.id);
+      remove.textContent = "ลบ";
+
+      row.append(copy, remove);
+      root.append(row);
+    });
+  }
+
+  function setMode(next, syncVehicle = true) {
+    if (!energyData[next]) return;
+
+    const oldPrimary = primarySourceKind(mode);
+    mode = next;
+    const data = energyData[mode];
+
+    document.querySelectorAll("#powerTabs button").forEach(button => {
+      const active = button.dataset.mode === mode;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+
+    if ($("energyType")) {
+      const previousType = $("energyType").value;
+      $("energyType").innerHTML = data.types
+        .map(type => `<option>${type}</option>`)
+        .join("");
+      if (data.types.includes(previousType)) $("energyType").value = previousType;
+    }
+
+    if ($("efficiency")) $("efficiency").value = data.eff;
+    if ($("energyPrice")) $("energyPrice").value = data.price;
+    if ($("effUnit")) $("effUnit").textContent = data.effUnit;
+    if ($("priceUnit")) $("priceUnit").textContent = data.priceUnit;
+
+    const nextPrimary = primarySourceKind(mode);
+    const source1 = $("actualSource1Type");
+    if (source1 && (!source1.value || source1.value === oldPrimary || source1.value === previousPrimaryKind)) {
+      source1.value = nextPrimary;
+    }
+    previousPrimaryKind = nextPrimary;
+    updateSourceUnits();
+
+    if (syncVehicle && (mode === "hybrid" || mode === "ev")) {
+      setVehicle(mode, false);
+    }
+
+    renderDriverProfile();
+    window.dispatchEvent(new CustomEvent("drivecost:modechange", { detail: { mode } }));
     calculate();
   }
 
-  function setVehicle(next,syncPower=true){
-    if(!vehicleData[next]) return;
+  function setVehicle(next, syncPower = true) {
+    if (!vehicleData[next]) return;
 
-    const previousVehicle=vehicle;
-    vehicle=next;
-    const data=vehicleData[vehicle];
+    const previous = vehicle;
+    vehicle = next;
+    const data = vehicleData[vehicle];
 
-    if(previousVehicle!==vehicle){
-      window.dispatchEvent(new CustomEvent("drivecost:vehiclechange",{detail:{vehicle}}));
-    }
-
-    document.querySelectorAll("#vehicleSelector .vehicle-option").forEach(button=>{
-      button.classList.toggle("active",button.dataset.vehicle===vehicle);
+    document.querySelectorAll("#vehicleSelector .vehicle-option").forEach(button => {
+      const active = button.dataset.vehicle === vehicle;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
     });
 
-    const image=$("vehicleImage");
-    const stage=$("vehicleStage");
-    const label=$("vehicleLabel");
-    const sameVehicle=stage?.dataset.vehicle===vehicle;
-    const sameImage=image?.src===data.image || image?.getAttribute("src")===data.image;
+    if ($("vehicleLabel")) $("vehicleLabel").textContent = data.label;
+    if ($("mountainVehicleMass")) $("mountainVehicleMass").value = data.mass;
 
-    if(label) label.textContent=data.label;
+    const image = $("vehicleImage");
+    const stage = $("vehicleStage");
+    const sameVehicle = stage?.dataset.vehicle === vehicle;
+    const sameImage = image?.getAttribute("src") === data.image;
 
-    if(image && (!sameVehicle || !sameImage)){
+    if (image && (!sameVehicle || !sameImage)) {
       image.classList.add("switching");
-      const removeSwitching=()=>image.classList.remove("switching");
-
-      setTimeout(()=>{
-        if(image.getAttribute("src")!==data.image){
-          image.src=data.image;
-        }
-        if(stage) stage.dataset.vehicle=vehicle;
-
-        if(image.complete){
-          removeSwitching();
-        }else{
-          image.addEventListener("load",removeSwitching,{once:true});
-          image.addEventListener("error",removeSwitching,{once:true});
-        }
-        setTimeout(removeSwitching,450);
-      },90);
-    }else{
-      if(stage) stage.dataset.vehicle=vehicle;
-      image?.classList.remove("switching");
-    }
-
-    if(syncPower){
-      if(mode!==data.defaultMode){
-        setMode(data.defaultMode,false);
-      }else{
-        $("efficiency").value=data.eff;
-        calculate();
+      const finish = () => image.classList.remove("switching");
+      if (image.getAttribute("src") !== data.image) image.src = data.image;
+      if (stage) stage.dataset.vehicle = vehicle;
+      if (image.complete) finish();
+      else {
+        image.addEventListener("load", finish, { once: true });
+        image.addEventListener("error", finish, { once: true });
       }
-    }else{
-      $("efficiency").value=data.eff;
-      calculate();
+      setTimeout(finish, 450);
+    }
+
+    if (previous !== vehicle) {
+      window.dispatchEvent(new CustomEvent("drivecost:vehiclechange", { detail: { vehicle } }));
+    }
+
+    if (syncPower) {
+      if (mode !== data.defaultMode) setMode(data.defaultMode, false);
+      else if ($("efficiency")) $("efficiency").value = data.eff;
+    }
+
+    renderDriverProfile();
+    renderActualRecords();
+    calculate();
+  }
+
+  function modeCopy(next) {
+    if (next === "estimate") {
+      return {
+        help: "วางแผนก่อนเดินทางจากระยะทาง อัตราสิ้นเปลือง ราคา และพฤติกรรมผู้ขับที่แสดงแยก",
+        button: "▣  คำนวณก่อนเดินทาง"
+      };
+    }
+    if (next === "mountain") {
+      return {
+        help: "คำนวณทางราบ พลังงานขึ้นเขา การคืนพลังงานขาลง น้ำหนัก รถติด แอร์ และผิวทางแยกทุกรายการ",
+        button: "▣  คำนวณเส้นทางภูเขา"
+      };
+    }
+    return {
+      help: "ใช้เลขไมล์และยอดเติมจริง ระบบรวมค่าน้ำมัน แก๊ส และไฟฟ้าโดยไม่หารผู้โดยสาร",
+      button: "▣  คำนวณจากยอดเติมจริง"
+    };
+  }
+
+  function setCalculationMode(next) {
+    if (!["actual", "estimate", "mountain"].includes(next)) next = "actual";
+    calculationMode = next;
+
+    document.querySelectorAll("[data-calculation-mode]").forEach(button => {
+      const active = button.dataset.calculationMode === calculationMode;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+    });
+
+    document.querySelectorAll("[data-mode-panel]").forEach(panel => {
+      const active = panel.dataset.modePanel === calculationMode;
+      panel.classList.toggle("active", active);
+      panel.hidden = !active;
+    });
+
+    const copy = modeCopy(calculationMode);
+    if ($("calculationModeHelp")) $("calculationModeHelp").textContent = copy.help;
+    if ($("calcBtn")) $("calcBtn").textContent = copy.button;
+
+    window.dispatchEvent(new CustomEvent("drivecost:calculationmodechange", {
+      detail: { calculationMode }
+    }));
+
+    calculate();
+  }
+
+  function gatherActual() {
+    return {
+      mode,
+      baselineEfficiency: number("efficiency", energyData[mode].eff),
+      useDirectDistance: $("actualUseDirectDistance")?.checked,
+      odometerStart: number("actualOdometerStart"),
+      odometerEnd: number("actualOdometerEnd"),
+      directDistance: number("actualDirectDistance"),
+      fillMethod: $("actualFillMethod")?.value || "full_to_full",
+      sources: [1, 2, 3].map(index => ({
+        kind: $(`actualSource${index}Type`)?.value || "",
+        quantity: number(`actualSource${index}Quantity`),
+        cost: number(`actualSource${index}Cost`)
+      }))
+    };
+  }
+
+  function gatherEstimate() {
+    return {
+      mode,
+      distance: number("estimateDistance"),
+      efficiency: number("efficiency", energyData[mode].eff),
+      price: number("energyPrice", energyData[mode].price),
+      driverFactor: driverFactor("estimateDriverPreset", "estimateDriverCustom")
+    };
+  }
+
+  function gatherMountain() {
+    return {
+      mode,
+      distance: number("mountainDistance"),
+      efficiency: number("efficiency", energyData[mode].eff),
+      price: number("energyPrice", energyData[mode].price),
+      vehicleMass: number("mountainVehicleMass", vehicleData[vehicle].mass),
+      payloadMass: number("mountainPayload"),
+      ascent: number("mountainAscent"),
+      descent: number("mountainDescent"),
+      maxGrade: number("mountainMaxGrade"),
+      driverFactor: driverFactor("mountainDriverPreset", "mountainDriverCustom"),
+      trafficPct: number("mountainTraffic"),
+      acPct: number("mountainAc"),
+      roadPct: number("mountainRoad")
+    };
+  }
+
+  function setKpi(index, label, value, unit) {
+    if ($(`resultKpi${index}Label`)) $(`resultKpi${index}Label`).textContent = label;
+    const valueId = ["energyUsed", "totalDistance", "costPerKm", "energyPriceUsed"][index - 1];
+    if ($(valueId)) {
+      $(valueId).innerHTML = `${value} <em>${unit}</em>`;
     }
   }
 
-  function calculate(){
-    const distance=Math.max(0,n("distance"));
-    const trips=Math.max(1,Math.floor(n("trips")));
-    const passengers=Math.max(1,Math.floor(n("passengers")));
-    let totalDistance=distance*trips*($("roundTrip").checked?2:1);
-    $("totalDistanceInput").value=fmt(totalDistance,0);
+  function renderBreakdown(result) {
+    const root = $("resultBreakdown");
+    if (!root) return;
+    root.textContent = "";
 
-    const factors=["wheel","load","tune","traffic","hill","ac"].reduce((s,id)=>s+n(id),0);
-    const multiplier=Math.max(.1,1+factors/100);
-    $("factorValue").textContent=fmt(multiplier,2)+"×";
-    $("factorSub").textContent=(factors>=0?"สิ้นเปลืองเพิ่ม ":"ประหยัดขึ้น ")+fmt(Math.abs(factors),0)+"%";
-
-    let energyUse;
-    if(mode==="ev"){
-      energyUse=totalDistance*(n("efficiency")/100)*multiplier;
-    }else{
-      energyUse=(totalDistance/Math.max(.0001,n("efficiency")))*multiplier;
+    const rows = Array.isArray(result.breakdown) ? result.breakdown : [];
+    if (!rows.length) {
+      const empty = document.createElement("div");
+      empty.className = "result-breakdown-empty";
+      empty.textContent = "ยังไม่มีรายการสำหรับคำนวณ";
+      root.append(empty);
+      return;
     }
-    const energyCost=energyUse*n("energyPrice");
-    const toll=Math.max(0,n("toll"));
-    const parking=Math.max(0,n("parking"));
-    const other=Math.max(0,n("other"));
-    const total=energyCost+toll+parking+other;
-    const perKm=total/Math.max(1,totalDistance);
-    const perPerson=total/passengers;
 
-    $("totalCost").innerHTML=fmt(total,2)+' <span>บาท</span>';
-    $("energyUsed").innerHTML=fmt(energyUse,2)+' <em>'+(mode==="ev"?"kWh":mode==="ngv"?"กก.":"ลิตร")+'</em>';
-    $("totalDistance").innerHTML=fmt(totalDistance,0)+' <em>กม.</em>';
-    $("costPerKm").innerHTML=fmt(perKm,2)+' <em>บาท/กม.</em>';
-    $("costPerPerson").innerHTML=fmt(perPerson,2)+' <em>บาท/คน</em>';
+    rows.forEach(item => {
+      const row = document.createElement("div");
+      row.className = `result-breakdown-row ${item.amount < 0 ? "negative" : ""}`;
 
-    const denom=Math.max(total,.0001);
-    const pe=energyCost/denom*100, pt=toll/denom*100, pp=parking/denom*100, po=other/denom*100;
-    $("legendEnergy").textContent=fmt(pe,1)+"%";
-    $("legendToll").textContent=fmt(pt,1)+"%";
-    $("legendParking").textContent=fmt(pp,1)+"%";
-    $("legendOther").textContent=fmt(po,1)+"%";
-    $("donut").style.background=`conic-gradient(var(--blue) 0 ${pe}%,var(--green) ${pe}% ${pe+pt}%,var(--orange) ${pe+pt}% ${pe+pt+pp}%,#3b82a3 ${pe+pt+pp}% 100%)`;
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      const detail = document.createElement("span");
+      title.textContent = item.label;
+      detail.textContent = item.detail || "";
+      copy.append(title, detail);
 
-    const trafficPct=n("traffic");
-    const saving=energyCost*(Math.min(trafficPct,10)/Math.max(100+factors,1));
-    $("savingValue").textContent=fmt(saving,2)+" บาท";
-    $("dateStamp").textContent="คำนวณล่าสุด "+new Date().toLocaleString("th-TH",{dateStyle:"medium",timeStyle:"short"});
-    const calculationResult={mode,vehicle,energyType:$("energyType").value,totalDistance,energyUse,energyCost,toll,parking,other,total,perKm,perPerson,multiplier};
-    window.dispatchEvent(new CustomEvent("drivecost:calculated",{detail:calculationResult}));
-    return calculationResult;
+      const amount = document.createElement("b");
+      const sign = item.amount > 0 ? "+" : "";
+      amount.textContent = `${sign}${fmt(item.amount, 2)} บาท`;
+
+      row.append(copy, amount);
+      root.append(row);
+    });
+
+    const totalRow = document.createElement("div");
+    totalRow.className = "result-breakdown-row total";
+    const totalLabel = document.createElement("strong");
+    const totalAmount = document.createElement("b");
+    totalLabel.textContent = "รวมสุทธิ";
+    totalAmount.textContent = `${fmt(result.total, 2)} บาท`;
+    totalRow.append(totalLabel, totalAmount);
+    root.append(totalRow);
   }
 
-  function snapshot(){
-    const data={mode,vehicle,energyType:$("energyType").value};
-    ids.forEach(id=>{const el=$(id);data[id]=el.type==="checkbox"?el.checked:el.value});
+  function renderWarnings(result) {
+    const root = $("resultWarnings");
+    if (!root) return;
+
+    const warnings = Array.isArray(result.warnings) ? result.warnings : [];
+    root.textContent = "";
+    root.hidden = warnings.length === 0;
+
+    warnings.forEach(message => {
+      const row = document.createElement("div");
+      row.textContent = `! ${message}`;
+      root.append(row);
+    });
+  }
+
+  function renderResult(result) {
+    lastResult = result;
+    const isActual = result.calculationMode === "actual";
+    const isMountain = result.calculationMode === "mountain";
+
+    if ($("resultMetricLabel")) {
+      $("resultMetricLabel").textContent = isActual
+        ? "ค่าเชื้อเพลิงจากยอดเติมจริง"
+        : isMountain
+          ? "ค่าเชื้อเพลิงเส้นทางภูเขา"
+          : "ค่าน้ำมันประมาณก่อนเดินทาง";
+    }
+
+    if ($("totalCost")) {
+      $("totalCost").innerHTML = `${fmt(result.total, 2)} <span>บาท</span>`;
+    }
+
+    if ($("totalDistanceInput")) $("totalDistanceInput").value = result.totalDistance;
+    if ($("distance")) $("distance").value = result.totalDistance;
+    if ($("passengers")) $("passengers").value = "1";
+    if ($("factorValue")) {
+      const factor = result.driverFactor || 1;
+      $("factorValue").textContent = `${fmt(factor, 3)}×`;
+    }
+
+    if (isActual) {
+      setKpi(1, "ระยะทางจริง", fmt(result.totalDistance, 1), "กม.");
+      setKpi(2, "ยอดเติมรวม", fmt(result.total, 2), "บาท");
+      setKpi(3, "ต้นทุนจริงต่อกิโลเมตร", fmt(result.perKm, 2), "บาท/กม.");
+      setKpi(4, "คุณภาพข้อมูล", result.confidence?.level === "high" ? "สูง" : result.confidence?.level === "medium" ? "กลาง" : "ประกอบ", result.confidence?.level === "high" ? "เต็มถัง" : "ตรวจวิธีเติม");
+
+      if ($("resultBreakdownTitle")) $("resultBreakdownTitle").textContent = "ยอดเติมจริงที่นำมารวม";
+      if ($("trustBarLabel")) $("trustBarLabel").textContent = "คุณภาพข้อมูลจริง";
+      if ($("currentPriceSource")) $("currentPriceSource").textContent = result.confidence?.label || "ข้อมูลจริง";
+      if ($("currentPriceUpdated")) $("currentPriceUpdated").textContent = result.confidence?.detail || "ใช้ข้อมูลที่กรอก";
+      if ($("inlineLiveRefreshButton")) $("inlineLiveRefreshButton").hidden = true;
+      if ($("resultInsightTitle")) $("resultInsightTitle").textContent = "ยอดจริงไม่ถูกปรับด้วยตัวคูณ";
+      if ($("insightText")) {
+        $("insightText").textContent = result.calibration
+          ? `ครั้งนี้วัดได้ ${fmt(result.calibration.observedPer100, 2)} ${result.calibration.unit} เทียบค่ามาตรฐาน ${fmt(result.calibration.baselinePer100, 2)} ${result.calibration.unit} และสามารถใช้เรียนรู้ผู้ขับได้`
+          : "ระบบรวมยอดที่จ่ายจริงโดยตรง ไม่หารผู้โดยสาร และไม่เปลี่ยนยอดด้วยสภาพรถหรือเส้นทาง";
+      }
+    } else if (isMountain) {
+      setKpi(1, "พลังงานรวม", fmt(result.energyUse, 2), result.energyUnit);
+      setKpi(2, "ระยะทาง", fmt(result.totalDistance, 1), "กม.");
+      setKpi(3, "พลังงานขาขึ้น", fmt(result.ascentMechanicalKwh, 2), "kWh ที่ล้อ");
+      setKpi(4, "ต้นทุนต่อกิโลเมตร", fmt(result.perKm, 2), "บาท/กม.");
+
+      if ($("resultBreakdownTitle")) $("resultBreakdownTitle").textContent = "แยกผลกระทบเส้นทางภูเขา";
+      if ($("trustBarLabel")) $("trustBarLabel").textContent = "แหล่งราคาพลังงาน";
+      if ($("inlineLiveRefreshButton")) $("inlineLiveRefreshButton").hidden = false;
+      if ($("resultInsightTitle")) $("resultInsightTitle").textContent = "ความสูงสะสมสำคัญกว่าความสูงปลายทาง";
+      if ($("insightText")) {
+        $("insightText").textContent = result.recoveryUse > 0
+          ? `ขาขึ้นเพิ่มพลังงาน ${fmt(result.climbUse, 2)} ${result.energyUnit} และคาดว่าจะคืนจากขาลง ${fmt(result.recoveryUse, 2)} ${result.energyUnit}`
+          : "รถเครื่องยนต์ทั่วไปไม่หักพลังงานขาลงคืนเป็นน้ำมัน ผลลัพธ์จึงเป็นค่าประมาณแบบระมัดระวัง";
+      }
+    } else {
+      setKpi(1, "พลังงานที่คาดว่าจะใช้", fmt(result.energyUse, 2), result.energyUnit);
+      setKpi(2, "ระยะทาง", fmt(result.totalDistance, 1), "กม.");
+      setKpi(3, "ต้นทุนต่อกิโลเมตร", fmt(result.perKm, 2), "บาท/กม.");
+      setKpi(4, "ปัจจัยผู้ขับ", fmt(result.driverFactor, 3), "เท่า");
+
+      if ($("resultBreakdownTitle")) $("resultBreakdownTitle").textContent = "ค่ามาตรฐานและพฤติกรรมผู้ขับ";
+      if ($("trustBarLabel")) $("trustBarLabel").textContent = "แหล่งราคาพลังงาน";
+      if ($("inlineLiveRefreshButton")) $("inlineLiveRefreshButton").hidden = false;
+      if ($("resultInsightTitle")) $("resultInsightTitle").textContent = "ใช้ข้อมูลจริงของคุณได้";
+      if ($("insightText")) {
+        const profile = driverProfile();
+        $("insightText").textContent = profile.available
+          ? `ประมาณการนี้ใช้ปัจจัย ${fmt(result.driverFactor, 3)}× จากข้อมูลเติมจริง ${profile.sampleCount} ครั้ง หรือเปลี่ยนเป็นค่ามาตรฐานได้ทุกเมื่อ`
+          : "ยังไม่มีข้อมูลเติมเต็มถัง ระบบใช้ค่ามาตรฐาน 1.000× จนกว่าจะมีข้อมูลจริง";
+      }
+    }
+
+    renderBreakdown(result);
+    renderWarnings(result);
+    updateActualDistance();
+
+    if ($("dateStamp")) {
+      $("dateStamp").textContent = `คำนวณล่าสุด ${new Date().toLocaleString("th-TH", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      })}`;
+    }
+
+    window.dispatchEvent(new CustomEvent("drivecost:calculated", { detail: result }));
+  }
+
+  function calculate() {
+    let result;
+
+    if (calculationMode === "actual") {
+      result = engine.calculateActual(gatherActual());
+    } else if (calculationMode === "mountain") {
+      result = engine.calculateMountain(gatherMountain());
+    } else {
+      result = engine.calculateEstimate(gatherEstimate());
+    }
+
+    result = {
+      ...result,
+      mode,
+      vehicle,
+      energyType: $("energyType")?.value || energyData[mode].types[0],
+      energyCost: result.total,
+      toll: 0,
+      parking: 0,
+      other: 0,
+      multiplier: result.driverFactor || 1
+    };
+
+    renderResult(result);
+    return result;
+  }
+
+  function snapshot() {
+    const data = {
+      calculationMode,
+      mode,
+      vehicle,
+      energyType: $("energyType")?.value || ""
+    };
+
+    inputIds.forEach(id => {
+      const element = $(id);
+      if (!element) return;
+      data[id] = element.type === "checkbox" ? element.checked : element.value;
+    });
+
     return data;
   }
 
-  function save(){
-    const list=JSON.parse(localStorage.getItem("drivecost-dark-scenarios")||"[]");
-    const result=calculate();
-    list.unshift({createdAt:new Date().toISOString(),data:snapshot(),result});
-    localStorage.setItem("drivecost-dark-scenarios",JSON.stringify(list.slice(0,30)));
-    toast("บันทึกสถานการณ์แล้ว");
+  function applyData(data) {
+    if (!data || typeof data !== "object") return;
+
+    setMode(data.mode || "fuel", false);
+    setVehicle(data.vehicle || "sedan", false);
+    setCalculationMode(data.calculationMode || "estimate");
+
+    if (data.energyType !== undefined && $("energyType")) {
+      $("energyType").value = data.energyType;
+    }
+
+    inputIds.forEach(id => {
+      const element = $(id);
+      if (!element || data[id] === undefined) return;
+      if (element.type === "checkbox") element.checked = Boolean(data[id]);
+      else element.value = data[id];
+    });
+
+    if (data.calculationMode === undefined) {
+      const legacyDistance = Math.max(0, Number(data.totalDistanceInput || data.distance) || 0);
+      if ($("estimateDistance")) $("estimateDistance").value = legacyDistance || 300;
+      setCalculationMode("estimate");
+    }
+
+    updateSourceUnits();
+    updateActualDistance();
+    renderDriverProfile();
+    calculate();
   }
 
-  function exportCSV(){
-    const r=calculate();
-    const rows=[
-      ["รายการ","ค่า"],
-      ["ประเภทพลังงาน",r.energyType],["ระยะทางรวม",r.totalDistance],["พลังงานที่ใช้",r.energyUse],
-      ["ค่าพลังงาน",r.energyCost],["ค่าทางด่วน",r.toll],["ค่าจอดรถ",r.parking],
-      ["ค่าใช้จ่ายอื่น",r.other],["ต้นทุนรวม",r.total],["ต้นทุนต่อกม.",r.perKm],["ต้นทุนต่อคน",r.perPerson]
+  function saveActualRecord() {
+    setCalculationMode("actual");
+    const result = calculate();
+
+    if (result.totalDistance <= 0 || result.total <= 0) {
+      toast("กรุณาใส่ระยะทางและยอดเติมจริงก่อนบันทึก");
+      return;
+    }
+
+    const records = actualRecords();
+    const record = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      vehicle,
+      mode,
+      energyType: $("energyType")?.value || "",
+      note: $("actualRecordNote")?.value.trim().slice(0, 160) || "",
+      fillMethod: $("actualFillMethod")?.value || "full_to_full",
+      total: result.total,
+      totalDistance: result.totalDistance,
+      perKm: result.perKm,
+      sources: result.sources,
+      calibration: result.calibration,
+      confidence: result.confidence
+    };
+
+    records.unshift(record);
+    if (!storageSet(ACTUAL_RECORDS_KEY, JSON.stringify(records.slice(0, 100)))) {
+      toast("บันทึกในเครื่องไม่สำเร็จ กรุณาตรวจพื้นที่จัดเก็บของเบราว์เซอร์");
+      return;
+    }
+    renderActualRecords();
+    renderDriverProfile();
+
+    toast(result.calibration
+      ? "บันทึกแล้ว และอัปเดตโปรไฟล์ผู้ขับ"
+      : "บันทึกยอดจริงแล้ว แต่ยังไม่ใช้เรียนรู้");
+  }
+
+  function deleteActualRecord(id) {
+    const records = actualRecords().filter(record => String(record.id) !== String(id));
+    storageSet(ACTUAL_RECORDS_KEY, JSON.stringify(records));
+    renderActualRecords();
+    renderDriverProfile();
+    calculate();
+    toast("ลบบันทึกเติมจริงแล้ว");
+  }
+
+  function clearActualRecords() {
+    if (!confirm("ล้างบันทึกเติมจริงทั้งหมดของบัญชีนี้หรือไม่?")) return;
+    storageSet(ACTUAL_RECORDS_KEY, "[]");
+    renderActualRecords();
+    renderDriverProfile();
+    calculate();
+    toast("ล้างบันทึกเติมจริงแล้ว");
+  }
+
+  function exportCSV() {
+    const result = calculate();
+    const rows = [
+      ["DriveCost v3.1.0", result.calculationLabel],
+      ["รายการ", "ค่า"],
+      ...result.inputs,
+      ...result.breakdown.map(item => [
+        item.label,
+        `${item.amount.toFixed(2)} บาท${item.detail ? ` • ${item.detail}` : ""}`
+      ]),
+      ["รวมสุทธิ", `${result.total.toFixed(2)} บาท`],
+      ["ต้นทุนต่อกิโลเมตร", `${result.perKm.toFixed(3)} บาท/กม.`]
     ];
-    const csv="\uFEFF"+rows.map(row=>row.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")).join("\n");
-    const blob=new Blob([csv],{type:"text/csv;charset=utf-8"});
-    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="drivecost-report.csv";a.click();URL.revokeObjectURL(a.href);
+
+    const csv = "\uFEFF" + rows
+      .map(row => row.map(value => `"${String(value ?? "").replaceAll('"', '""')}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `drivecost-${result.calculationMode}-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
     toast("ส่งออก CSV แล้ว");
   }
 
-  document.querySelectorAll("#vehicleSelector .vehicle-option").forEach(button=>{
-    button.addEventListener("click",()=>setVehicle(button.dataset.vehicle));
+  async function shareResult() {
+    const result = calculate();
+    const text = `DriveCost ${result.calculationLabel}: ${fmt(result.total, 2)} บาท • ${fmt(result.totalDistance, 1)} กม. • ${fmt(result.perKm, 2)} บาท/กม.`;
+
+    if (navigator.share) {
+      await navigator.share({ title: "DriveCost", text }).catch(() => {});
+    } else if (navigator.clipboard) {
+      await navigator.clipboard.writeText(text);
+      toast("คัดลอกผลลัพธ์แล้ว");
+    }
+  }
+
+  document.querySelectorAll("[data-calculation-mode]").forEach(button => {
+    button.addEventListener("click", () => setCalculationMode(button.dataset.calculationMode));
   });
-  document.querySelectorAll("#powerTabs button").forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.mode)));
-  ids.forEach(id=>["input","change"].forEach(ev=>$(id).addEventListener(ev,calculate)));
-  $("calcBtn").addEventListener("click",()=>{calculate();toast("คำนวณข้อมูลล่าสุดแล้ว")});
-  $("saveBtn").addEventListener("click",save);
-  $("saveTopBtn").addEventListener("click",save);
-  $("csvBtn").addEventListener("click",exportCSV);
-  $("shareBtn").addEventListener("click",async()=>{
-    const r=calculate();
-    const text=`DriveCost: ค่าเดินทางรวม ${fmt(r.total,2)} บาท ระยะทาง ${fmt(r.totalDistance,0)} กม.`;
-    if(navigator.share){await navigator.share({title:"DriveCost",text}).catch(()=>{})}
-    else{await navigator.clipboard.writeText(text);toast("คัดลอกผลลัพธ์แล้ว")}
+
+  document.querySelectorAll("#vehicleSelector .vehicle-option").forEach(button => {
+    button.addEventListener("click", () => setVehicle(button.dataset.vehicle));
+  });
+
+  document.querySelectorAll("#powerTabs button").forEach(button => {
+    button.addEventListener("click", () => setMode(button.dataset.mode));
+  });
+
+  inputIds.forEach(id => {
+    const element = $(id);
+    if (!element) return;
+    ["input", "change"].forEach(eventName => {
+      element.addEventListener(eventName, () => {
+        if (id === "actualUseDirectDistance") updateActualDistance();
+        if (/actualSource[123]Type/.test(id)) updateSourceUnits();
+        calculate();
+      });
+    });
+  });
+
+  $("calcBtn")?.addEventListener("click", () => {
+    calculate();
+    toast("คำนวณข้อมูลล่าสุดแล้ว");
+  });
+
+  $("saveActualRecordBtn")?.addEventListener("click", saveActualRecord);
+  $("clearActualRecordsBtn")?.addEventListener("click", clearActualRecords);
+
+  $("actualRecordsList")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-delete-actual-record]");
+    if (button) deleteActualRecord(button.dataset.deleteActualRecord);
+  });
+
+  $("csvBtn")?.addEventListener("click", exportCSV);
+  $("shareBtn")?.addEventListener("click", shareResult);
+
+  window.addEventListener("drivecost:cloudapplied", () => {
+    renderActualRecords();
+    renderDriverProfile();
+    calculate();
   });
 
   window.DriveCostCore = {
-    get mode(){ return mode; },
-    get vehicle(){ return vehicle; },
-    vehicleData, energyData, ids,
-    setMode, setVehicle, calculate, snapshot,
-    applyData(data){
-      if(!data) return;
-      setMode(data.mode || "fuel", false);
-      setVehicle(data.vehicle || "sedan", false);
-      if(data.energyType !== undefined) $("energyType").value = data.energyType;
-      ids.forEach(id => {
-        const el = $(id);
-        if(!el || data[id] === undefined) return;
-        if(el.type === "checkbox") el.checked = Boolean(data[id]);
-        else el.value = data[id];
-      });
+    get mode() { return mode; },
+    get vehicle() { return vehicle; },
+    get calculationMode() { return calculationMode; },
+    get lastResult() { return lastResult; },
+    vehicleData,
+    energyData,
+    ids: inputIds,
+    setMode,
+    setVehicle,
+    setCalculationMode,
+    calculate,
+    snapshot,
+    applyData,
+    refreshPersonalization() {
+      renderActualRecords();
+      renderDriverProfile();
       calculate();
-    }
+    },
+    getDriverProfile: driverProfile,
+    getActualRecords: actualRecords,
+    actualRecordsKey: ACTUAL_RECORDS_KEY
   };
 
-  setMode("fuel",false);
-  setVehicle("sedan",false);
-  
+  setMode("fuel", false);
+  setVehicle("sedan", false);
+  setCalculationMode("actual");
+  updateSourceUnits();
+  updateActualDistance();
+  renderActualRecords();
+  renderDriverProfile();
+  calculate();
 })();

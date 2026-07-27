@@ -10,6 +10,7 @@
     priceUpdated: "drivecost-v2-price-updated",
     settings: "drivecost-v2-settings",
     draft: "drivecost-v2-draft",
+    actualFills: "drivecost-v3-actual-fill-records",
     accessibility: "drivecost-v2.1-accessibility",
     livePriceSettings: "drivecost-live-price-settings-v1"
   };
@@ -363,7 +364,7 @@
     if (!section || section.encoding === "missing") return false;
     const value = section.value;
 
-    if (sectionName === "scenarios" || sectionName === "history") {
+    if (sectionName === "scenarios" || sectionName === "history" || sectionName === "actualFills") {
       return Array.isArray(value) && value.length > 0;
     }
     if (sectionName === "prices") {
@@ -449,7 +450,11 @@
       if (!existing || itemTime >= existingTime) map.set(key, item);
     }
 
-    const limit = sectionName === "history" ? 50 : 30;
+    const limit = sectionName === "history"
+      ? 50
+      : sectionName === "actualFills"
+        ? 100
+        : 30;
     const merged = [...map.values()]
       .sort((a, b) => timestampValue(b?.updatedAt || b?.createdAt) - timestampValue(a?.updatedAt || a?.createdAt))
       .slice(0, limit);
@@ -495,7 +500,7 @@
       const localTime = timestampValue(local.sectionUpdatedAt[sectionName]);
       const remoteTime = timestampValue(remote.sectionUpdatedAt[sectionName]);
 
-      if (sectionName === "scenarios" || sectionName === "history") {
+      if (sectionName === "scenarios" || sectionName === "history" || sectionName === "actualFills") {
         const localExists = localSection && localSection.encoding !== "missing";
         const remoteExists = remoteSection && remoteSection.encoding !== "missing";
 

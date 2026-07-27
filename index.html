@@ -1,18 +1,18 @@
 <!doctype html>
 <html lang="th">
 <head>
-<script src="/storage-scope.js?v=3.0.1"></script>
+<script src="/storage-scope.js?v=3.1.0"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#06111d">
-  <meta name="description" content="DriveCost - คำนวณค่าใช้จ่ายการเดินทางสำหรับรถน้ำมัน ก๊าซ ไฮบริด EV และรถดัดแปลง">
-  <link rel="manifest" href="/manifest.json?v=3.0.1">
+  <meta name="description" content="DriveCost - คำนวณค่าเชื้อเพลิงจริงและเส้นทางสำหรับรถน้ำมัน ก๊าซ ไฮบริด EV และรถดัดแปลง">
+  <link rel="manifest" href="/manifest.json?v=3.1.0">
 <meta name="application-name" content="DriveCost">
 <meta name="description" content="คำนวณค่าเดินทางและจัดเก็บข้อมูลแยกตามบัญชีอย่างปลอดภัย">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="/">
-  <title>DriveCost v3.0.1</title>
-  <link rel="stylesheet" href="/app.bundle.css?v=3.0.1">
+  <title>DriveCost v3.1.0</title>
+  <link rel="stylesheet" href="/app.bundle.css?v=3.1.0">
   
   
   
@@ -20,7 +20,7 @@
   
 
 
-<script src="/production-bootstrap.js?v=3.0.1"></script>
+<script src="/production-bootstrap.js?v=3.1.0"></script>
 
 
 
@@ -52,14 +52,14 @@
     <span class="sidebar-status-dot" aria-hidden="true"></span>
     <span>ข้อมูลเก็บในอุปกรณ์นี้</span>
   </div>
-  <div class="version">DriveCost v3.0.1</div>
+  <div class="version">DriveCost v3.1.0</div>
   </aside>
 
   <main class="content">
     <header class="page-head">
       <div>
-        <h1 id="pageTitle">คำนวณค่าใช้จ่ายการเดินทาง</h1>
-        <p id="pageSubtitle">คำนวณได้ทุกพลังงาน • ทุกเส้นทาง • ทุกรูปแบบการขับขี่</p>
+        <h1 id="pageTitle">คำนวณค่าเชื้อเพลิงจริงและเส้นทาง</h1>
+        <p id="pageSubtitle">คำนวณค่าน้ำมันล้วนจากระยะทางจริง อัตราสิ้นเปลือง และราคาพลังงาน</p>
       </div>
       <div class="head-actions" id="headActions">
         <button type="button" class="btn" data-go-page="compare"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"/><path d="m17 5 3 3-3 3M7 13l-3 3 3 3"/></svg> เปรียบเทียบ</button>
@@ -94,121 +94,395 @@
       </div>
     </header>
 
-    <section class="page-view active" id="page-calculator">
+  
+  <section class="page-view active" id="page-calculator">
+    <div class="calculation-mode-shell">
+      <div class="calculation-mode-tabs" id="calculationModeTabs" role="tablist" aria-label="รูปแบบการคำนวณ">
+        <button type="button" class="active" data-calculation-mode="actual" role="tab" aria-selected="true">
+          <span>01</span><strong>เติมจริง</strong><small>แม่นที่สุดสำหรับย้อนหลัง</small>
+        </button>
+        <button type="button" data-calculation-mode="estimate" role="tab" aria-selected="false">
+          <span>02</span><strong>ประมาณก่อนเดินทาง</strong><small>วางแผนจากรถและผู้ขับ</small>
+        </button>
+        <button type="button" data-calculation-mode="mountain" role="tab" aria-selected="false">
+          <span>03</span><strong>เส้นทางภูเขา</strong><small>ความสูง น้ำหนัก และสภาพทาง</small>
+        </button>
+      </div>
+      <div class="calculation-mode-help" id="calculationModeHelp">
+        ใช้เลขไมล์และยอดเติมจริง ระบบรวมค่าน้ำมัน แก๊ส และไฟฟ้าโดยไม่หารผู้โดยสาร
+      </div>
+    </div>
+
     <div class="workspace">
       <section class="panel form-panel">
-        <div class="section">
-          <div class="section-head"><div class="step">1</div><h2>ข้อมูลเส้นทาง</h2></div>
-          <div class="grid4">
-            <div class="field">
-              <label><span>ระยะทางต่อเที่ยว</span></label>
-              <div class="field-box"><input id="distance" aria-label="ระยะทางต่อเที่ยว กิโลเมตร" type="number" min="0" value="250"><span class="unit">กม.</span></div>
-            </div>
-            <div class="field">
-              <label><span>ไป - กลับ</span></label>
-              <div class="field-box switch-wrap">
-                <label class="switch"><input id="roundTrip" type="checkbox" checked><span class="slider"></span></label>
-              </div>
-            </div>
-            <div class="field">
-              <label><span>ระยะทางรวม</span></label>
-              <div class="field-box"><input id="totalDistanceInput" aria-label="ระยะทางรวม กิโลเมตร" value="500" readonly><span class="unit">กม.</span></div>
-            </div>
-            <div class="field">
-              <label><span>จำนวนเที่ยว</span></label>
-              <div class="field-box"><input id="trips" aria-label="จำนวนเที่ยว" type="number" min="1" value="1"><span class="unit">เที่ยว</span></div>
-            </div>
-            <div class="field">
-              <label><span>จำนวนผู้โดยสาร</span></label>
-              <div class="field-box"><input id="passengers" aria-label="จำนวนผู้โดยสาร" type="number" min="1" value="2"><span class="unit">คน</span></div>
-            </div>
+        <div class="section shared-vehicle-section">
+          <div class="section-head">
+            <div class="step">A</div>
+            <h2>รถและพลังงานหลัก</h2>
           </div>
-        </div>
-
-        <div class="section">
-          <div class="section-head"><div class="step">2</div><h2>ประเภทรถและอัตราสิ้นเปลือง</h2></div>
-          <div class="vehicle-caption">เลือกโมเดลรถ 3D ที่จะแสดงบนแดชบอร์ด</div>
+          <div class="vehicle-caption">ใช้สำหรับแสดงรถ เลือกหน่วย และเรียนรู้พฤติกรรมของรถคันนี้</div>
           <div class="vehicle-selector" id="vehicleSelector">
-            <button class="vehicle-option active" data-vehicle="sedan"><strong>Sedan</strong><span>รถเก๋ง</span></button>
-            <button class="vehicle-option" data-vehicle="suv"><strong>SUV</strong><span>อเนกประสงค์</span></button>
-            <button class="vehicle-option" data-vehicle="pickup"><strong>Pickup</strong><span>รถกระบะ</span></button>
-            <button class="vehicle-option" data-vehicle="van"><strong>Van</strong><span>รถตู้ / MPV</span></button>
-            <button class="vehicle-option" data-vehicle="hybrid"><strong>Hybrid</strong><span>ไฮบริด</span></button>
-            <button class="vehicle-option" data-vehicle="ev"><strong>EV</strong><span>รถไฟฟ้า</span></button>
+            <button type="button" class="vehicle-option active" data-vehicle="sedan"><strong>Sedan</strong><span>รถเก๋ง</span></button>
+            <button type="button" class="vehicle-option" data-vehicle="suv"><strong>SUV</strong><span>อเนกประสงค์</span></button>
+            <button type="button" class="vehicle-option" data-vehicle="pickup"><strong>Pickup</strong><span>รถกระบะ</span></button>
+            <button type="button" class="vehicle-option" data-vehicle="van"><strong>Van</strong><span>รถตู้ / MPV</span></button>
+            <button type="button" class="vehicle-option" data-vehicle="hybrid"><strong>Hybrid</strong><span>ไฮบริด</span></button>
+            <button type="button" class="vehicle-option" data-vehicle="ev"><strong>EV</strong><span>รถไฟฟ้า</span></button>
           </div>
+
           <div class="power-tabs" id="powerTabs">
-            <button class="active" data-mode="fuel">น้ำมัน</button>
-            <button data-mode="diesel">ดีเซล</button>
-            <button data-mode="lpg">LPG</button>
-            <button data-mode="ngv">NGV</button>
-            <button data-mode="hybrid">ไฮบริด</button>
-            <button data-mode="ev">EV</button>
+            <button type="button" class="active" data-mode="fuel">น้ำมัน</button>
+            <button type="button" data-mode="diesel">ดีเซล</button>
+            <button type="button" data-mode="lpg">LPG</button>
+            <button type="button" data-mode="ngv">NGV</button>
+            <button type="button" data-mode="hybrid">ไฮบริด</button>
+            <button type="button" data-mode="ev">EV</button>
           </div>
-          <div class="grid3">
+
+          <div class="grid3 shared-energy-fields">
             <div class="field">
-              <label><span>ประเภทเชื้อเพลิง</span></label>
+              <label for="energyType">ชนิดพลังงานหลัก</label>
               <div class="field-box">
-                <select id="energyType" aria-label="ชนิดพลังงาน">
-                  <option>เบนซิน 95</option><option>แก๊สโซฮอล์ 95</option><option>E20</option><option>E85</option>
-                </select>
+                <select id="energyType" aria-label="ชนิดพลังงาน"></select>
               </div>
             </div>
             <div class="field">
-              <label><span>อัตราสิ้นเปลือง</span></label>
-              <div class="field-box"><input id="efficiency" aria-label="อัตราสิ้นเปลืองพลังงาน" type="number" value="15"><span class="unit" id="effUnit">กม./ลิตร</span></div>
+              <label for="efficiency">อัตราสิ้นเปลืองมาตรฐาน/ที่วัดได้</label>
+              <div class="field-box">
+                <input id="efficiency" aria-label="อัตราสิ้นเปลืองพลังงาน" type="number" min=".1" step=".1" value="15">
+                <span class="unit" id="effUnit">กม./ลิตร</span>
+              </div>
             </div>
             <div class="field">
-              <label><span>ราคาพลังงาน</span></label>
-              <div class="field-box"><input id="energyPrice" aria-label="ราคาพลังงานต่อหน่วย" type="number" value="42.50" step=".01"><span class="unit" id="priceUnit">บาท/ลิตร</span></div>
+              <label for="energyPrice">ราคาพลังงานสำหรับโหมดประมาณ</label>
+              <div class="field-box">
+                <input id="energyPrice" aria-label="ราคาพลังงานต่อหน่วย" type="number" min="0" step=".01" value="31.69">
+                <span class="unit" id="priceUnit">บาท/ลิตร</span>
+              </div>
               <div class="inline-source-note" id="inlinePriceSource">
                 <span class="source-dot sample" aria-hidden="true"></span>
                 <span id="inlinePriceSourceText">ข้อมูลตัวอย่างของระบบ</span>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="section">
-          <div class="section-head"><div class="step">3</div><h2>ค่าใช้จ่ายอื่น ๆ</h2></div>
-          <div class="grid3">
-            <div class="field">
-              <label><span>ค่าทางด่วน</span></label>
-              <div class="field-box"><input id="toll" aria-label="ค่าทางด่วน" type="number" value="100"><span class="unit">บาท</span></div>
+          <div class="driver-profile-card" id="driverProfileCard">
+            <div class="driver-profile-icon" aria-hidden="true">◉</div>
+            <div>
+              <small>โปรไฟล์การใช้พลังงานของรถคันนี้</small>
+              <strong id="driverProfileLabel">ยังไม่มีข้อมูลเติมเต็มถัง</strong>
+              <span id="driverProfileDetail">ระบบจะเรียนรู้จากการเติมจริงแบบเต็มถัง</span>
             </div>
-            <div class="field">
-              <label><span>ค่าจอดรถ</span></label>
-              <div class="field-box"><input id="parking" aria-label="ค่าจอดรถ" type="number" value="50"><span class="unit">บาท</span></div>
-            </div>
-            <div class="field">
-              <label><span>ค่าใช้จ่ายอื่น ๆ</span></label>
-              <div class="field-box"><input id="other" aria-label="ค่าใช้จ่ายอื่น" type="number" value="0"><span class="unit">บาท</span></div>
-            </div>
+            <b id="driverProfileFactor">1.000×</b>
           </div>
         </div>
 
-        <div class="section">
-          <div class="section-head">
-            <div class="step">4</div><h2>ปัจจัยปรับสภาพการขับขี่</h2><small>(ปรับตามสภาพจริง)</small>
+        <div class="calculation-mode-panel active" data-mode-panel="actual" role="tabpanel">
+          <div class="section">
+            <div class="section-head"><div class="step">1</div><h2>ระยะทางจากเลขไมล์</h2></div>
+
+            <label class="direct-distance-toggle">
+              <input type="checkbox" id="actualUseDirectDistance">
+              <span>ไม่มีเลขไมล์ ใช้ระยะทางรวมโดยตรง</span>
+            </label>
+
+            <div class="grid3" id="odometerFields">
+              <div class="field">
+                <label for="actualOdometerStart">เลขไมล์เริ่มต้น</label>
+                <div class="field-box"><input id="actualOdometerStart" type="number" min="0" step=".1" value="50000"><span class="unit">กม.</span></div>
+              </div>
+              <div class="field">
+                <label for="actualOdometerEnd">เลขไมล์สิ้นสุด</label>
+                <div class="field-box"><input id="actualOdometerEnd" type="number" min="0" step=".1" value="50300"><span class="unit">กม.</span></div>
+              </div>
+              <div class="field calculated-field">
+                <label>ระยะทางที่คำนวณได้</label>
+                <div class="field-box readonly-box"><output id="actualDistanceOutput">300.0</output><span class="unit">กม.</span></div>
+              </div>
+            </div>
+
+            <div class="field direct-distance-field" id="directDistanceField" hidden>
+              <label for="actualDirectDistance">ระยะทางรวมจริง</label>
+              <div class="field-box"><input id="actualDirectDistance" type="number" min="0" step=".1" value="300"><span class="unit">กม.</span></div>
+            </div>
           </div>
-          <div class="grid4">
-            <div class="factor-card"><label>ล้อและยาง</label><select id="wheel" aria-label="ขนาดล้อและยาง"><option value="0">มาตรฐาน</option><option value="5" selected>+5%</option><option value="10">+10%</option><option value="15">+15%</option></select></div>
-            <div class="factor-card"><label>น้ำหนักบรรทุก</label><select id="load" aria-label="น้ำหนักบรรทุก"><option value="0">ไม่มี</option><option value="5">+5%</option><option value="10" selected>+10%</option><option value="20">+20%</option></select></div>
-            <div class="factor-card"><label>จูนเครื่องยนต์</label><select id="tune" aria-label="การปรับแต่งเครื่องยนต์"><option value="-5">-5%</option><option value="0">มาตรฐาน</option><option value="8" selected>+8%</option><option value="15">+15%</option></select></div>
-            <div class="factor-card"><label>สภาพการจราจร</label><select id="traffic" aria-label="สภาพการจราจร"><option value="0">คล่องตัว</option><option value="10">ติดขัดเล็กน้อย</option><option value="15" selected>รถติดปานกลาง</option><option value="30">รถติดหนัก</option></select></div>
-            <div class="factor-card"><label>ทางชัน</label><select id="hill" aria-label="ลักษณะเส้นทาง"><option value="0">ทางราบ</option><option value="5" selected>ทางชันปานกลาง</option><option value="12">ทางชันมาก</option></select></div>
-            <div class="factor-card"><label>เครื่องปรับอากาศ</label><select id="ac" aria-label="การใช้เครื่องปรับอากาศ"><option value="0">ปิดแอร์</option><option value="5" selected>เปิดแอร์</option><option value="10">แอร์ทำงานหนัก</option></select></div>
-            <div class="factor-total"><span>ตัวคูณรวม</span><strong id="factorValue">1.43×</strong><span id="factorSub">สิ้นเปลืองเพิ่ม 43%</span></div>
+
+          <div class="section">
+            <div class="section-head"><div class="step">2</div><h2>ยอดเติมจริง</h2></div>
+            <div class="actual-source-head">
+              <span>ชนิดพลังงาน</span><span>ปริมาณ</span><span>ยอดที่จ่าย</span>
+            </div>
+
+            <div class="actual-source-row">
+              <div class="field">
+                <label for="actualSource1Type">รายการที่ 1</label>
+                <div class="field-box">
+                  <select id="actualSource1Type" class="actual-source-type">
+                    <option value="fuel">น้ำมันเบนซิน / แก๊สโซฮอล์</option>
+                    <option value="diesel">ดีเซล</option>
+                    <option value="lpg">LPG</option>
+                    <option value="ngv">NGV</option>
+                    <option value="ev">ไฟฟ้า</option>
+                    <option value="">ไม่ใช้</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="actualSource1Quantity">ปริมาณจากใบเสร็จ</label>
+                <div class="field-box"><input id="actualSource1Quantity" type="number" min="0" step=".001" value="34.711"><span class="unit" id="actualSource1Unit">ลิตร</span></div>
+              </div>
+              <div class="field">
+                <label for="actualSource1Cost">ยอดเงิน</label>
+                <div class="field-box"><input id="actualSource1Cost" type="number" min="0" step=".01" value="1100"><span class="unit">บาท</span></div>
+              </div>
+            </div>
+
+            <div class="actual-source-row">
+              <div class="field">
+                <label for="actualSource2Type">รายการที่ 2</label>
+                <div class="field-box">
+                  <select id="actualSource2Type" class="actual-source-type">
+                    <option value="">ไม่ใช้</option>
+                    <option value="fuel">น้ำมันเบนซิน / แก๊สโซฮอล์</option>
+                    <option value="diesel">ดีเซล</option>
+                    <option value="lpg">LPG</option>
+                    <option value="ngv">NGV</option>
+                    <option value="ev">ไฟฟ้า</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="actualSource2Quantity">ปริมาณจากใบเสร็จ</label>
+                <div class="field-box"><input id="actualSource2Quantity" type="number" min="0" step=".001" value="0"><span class="unit" id="actualSource2Unit">—</span></div>
+              </div>
+              <div class="field">
+                <label for="actualSource2Cost">ยอดเงิน</label>
+                <div class="field-box"><input id="actualSource2Cost" type="number" min="0" step=".01" value="0"><span class="unit">บาท</span></div>
+              </div>
+            </div>
+
+            <div class="actual-source-row">
+              <div class="field">
+                <label for="actualSource3Type">รายการที่ 3</label>
+                <div class="field-box">
+                  <select id="actualSource3Type" class="actual-source-type">
+                    <option value="">ไม่ใช้</option>
+                    <option value="fuel">น้ำมันเบนซิน / แก๊สโซฮอล์</option>
+                    <option value="diesel">ดีเซล</option>
+                    <option value="lpg">LPG</option>
+                    <option value="ngv">NGV</option>
+                    <option value="ev">ไฟฟ้า</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="actualSource3Quantity">ปริมาณจากใบเสร็จ</label>
+                <div class="field-box"><input id="actualSource3Quantity" type="number" min="0" step=".001" value="0"><span class="unit" id="actualSource3Unit">—</span></div>
+              </div>
+              <div class="field">
+                <label for="actualSource3Cost">ยอดเงิน</label>
+                <div class="field-box"><input id="actualSource3Cost" type="number" min="0" step=".01" value="0"><span class="unit">บาท</span></div>
+              </div>
+            </div>
           </div>
-          <button class="calc-btn" id="calcBtn">▣ &nbsp; คำนวณค่าใช้จ่าย</button>
+
+          <div class="section">
+            <div class="section-head"><div class="step">3</div><h2>คุณภาพข้อมูลและการเรียนรู้</h2></div>
+            <div class="grid2">
+              <div class="field">
+                <label for="actualFillMethod">วิธีบันทึกการเติม</label>
+                <div class="field-box">
+                  <select id="actualFillMethod">
+                    <option value="full_to_full">เต็มถังก่อนและหลังช่วงเลขไมล์</option>
+                    <option value="receipt_total">รวมยอดจากใบเสร็จในช่วงนี้</option>
+                    <option value="partial">เติมบางส่วน / ระดับถังไม่เท่ากัน</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="actualRecordNote">หมายเหตุ</label>
+                <div class="field-box"><input id="actualRecordNote" maxlength="160" placeholder="เช่น วิ่งขึ้นเขา รถติด หรือบรรทุกหนัก"></div>
+              </div>
+            </div>
+
+            <div class="actual-learning-note">
+              ระบบเรียนรู้พฤติกรรมเฉพาะเมื่อใช้วิธี “เต็มถังก่อนและหลัง” และมีพลังงานชนิดเดียวพร้อมปริมาณจากใบเสร็จ
+            </div>
+
+            <button type="button" class="btn btn-secondary actual-save-record" id="saveActualRecordBtn">
+              บันทึกข้อมูลจริงเพื่อเรียนรู้รถคันนี้
+            </button>
+
+            <div class="actual-records">
+              <div class="actual-records-head">
+                <div><strong>บันทึกเติมจริงล่าสุด</strong><span>แยกตามบัญชีและซิงก์ขึ้น Cloud</span></div>
+                <button type="button" class="mini-btn danger" id="clearActualRecordsBtn">ล้างทั้งหมด</button>
+              </div>
+              <div id="actualRecordsList" class="actual-records-list"></div>
+            </div>
+          </div>
         </div>
+
+        <div class="calculation-mode-panel" data-mode-panel="estimate" role="tabpanel" hidden>
+          <div class="section">
+            <div class="section-head"><div class="step">1</div><h2>ระยะทางและพฤติกรรมผู้ขับ</h2></div>
+            <div class="grid3">
+              <div class="field">
+                <label for="estimateDistance">ระยะทางรวมที่วางแผน</label>
+                <div class="field-box"><input id="estimateDistance" type="number" min="0" step=".1" value="300"><span class="unit">กม.</span></div>
+              </div>
+              <div class="field">
+                <label for="estimateDriverPreset">พฤติกรรมผู้ขับ</label>
+                <div class="field-box">
+                  <select id="estimateDriverPreset">
+                    <option value="learned">ใช้ข้อมูลเติมจริงของฉัน</option>
+                    <option value="smooth">ขับนิ่ม −8%</option>
+                    <option value="normal">ปกติ 0%</option>
+                    <option value="heavy">เร่งบ่อย +15%</option>
+                    <option value="custom">กำหนดเอง</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="estimateDriverCustom">ปรับพฤติกรรมเอง</label>
+                <div class="field-box"><input id="estimateDriverCustom" type="number" min="-35" max="70" step="1" value="0"><span class="unit">%</span></div>
+              </div>
+            </div>
+            <div class="transparent-formula-note">
+              ระบบแสดงค่ามาตรฐานและผลจากพฤติกรรมแยกคนละบรรทัด ไม่มีตัวคูณซ่อน
+            </div>
+          </div>
+        </div>
+
+        <div class="calculation-mode-panel" data-mode-panel="mountain" role="tabpanel" hidden>
+          <div class="section">
+            <div class="section-head"><div class="step">1</div><h2>ระยะทางและระดับความสูง</h2></div>
+            <div class="grid3">
+              <div class="field">
+                <label for="mountainDistance">ระยะทางรวม</label>
+                <div class="field-box"><input id="mountainDistance" type="number" min="0" step=".1" value="300"><span class="unit">กม.</span></div>
+              </div>
+              <div class="field">
+                <label for="mountainAscent">ความสูงสะสมขาขึ้น</label>
+                <div class="field-box"><input id="mountainAscent" type="number" min="0" step="1" value="1200"><span class="unit">ม.</span></div>
+              </div>
+              <div class="field">
+                <label for="mountainDescent">ความสูงสะสมขาลง</label>
+                <div class="field-box"><input id="mountainDescent" type="number" min="0" step="1" value="1200"><span class="unit">ม.</span></div>
+              </div>
+            </div>
+            <div class="mountain-elevation-note">
+              ใช้ “ความสูงสะสม” จากแอปแผนที่หรือไฟล์เส้นทาง ไม่ใช่เพียงความสูงปลายทาง
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head"><div class="step">2</div><h2>น้ำหนักและความยากของเส้นทาง</h2></div>
+            <div class="grid3">
+              <div class="field">
+                <label for="mountainVehicleMass">น้ำหนักรถพร้อมใช้งาน</label>
+                <div class="field-box"><input id="mountainVehicleMass" type="number" min="300" step="10" value="1350"><span class="unit">กก.</span></div>
+              </div>
+              <div class="field">
+                <label for="mountainPayload">คนและสัมภาระรวม</label>
+                <div class="field-box"><input id="mountainPayload" type="number" min="0" step="10" value="150"><span class="unit">กก.</span></div>
+              </div>
+              <div class="field">
+                <label for="mountainMaxGrade">ความชันสูงสุด</label>
+                <div class="field-box"><input id="mountainMaxGrade" type="number" min="0" max="40" step=".1" value="10"><span class="unit">%</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-head"><div class="step">3</div><h2>สภาพการใช้งาน</h2></div>
+            <div class="grid3">
+              <div class="field">
+                <label for="mountainDriverPreset">พฤติกรรมผู้ขับ</label>
+                <div class="field-box">
+                  <select id="mountainDriverPreset">
+                    <option value="learned">ใช้ข้อมูลเติมจริงของฉัน</option>
+                    <option value="smooth">ขับนิ่ม −8%</option>
+                    <option value="normal">ปกติ 0%</option>
+                    <option value="heavy">เร่งบ่อย +15%</option>
+                    <option value="custom">กำหนดเอง</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="mountainDriverCustom">ปรับผู้ขับเอง</label>
+                <div class="field-box"><input id="mountainDriverCustom" type="number" min="-35" max="70" step="1" value="0"><span class="unit">%</span></div>
+              </div>
+              <div class="field">
+                <label for="mountainTraffic">การจราจร</label>
+                <div class="field-box">
+                  <select id="mountainTraffic">
+                    <option value="0">ทางโล่ง 0%</option>
+                    <option value=".08">ชะลอสลับ +8%</option>
+                    <option value=".18">รถติด +18%</option>
+                    <option value=".28">ติดหนัก +28%</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="mountainAc">เครื่องปรับอากาศ</label>
+                <div class="field-box">
+                  <select id="mountainAc">
+                    <option value="0">ไม่ใช้ 0%</option>
+                    <option value=".04" selected>ปกติ +4%</option>
+                    <option value=".08">สูง +8%</option>
+                    <option value=".12">สูงมาก +12%</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field">
+                <label for="mountainRoad">ผิวทาง</label>
+                <div class="field-box">
+                  <select id="mountainRoad">
+                    <option value="0" selected>ลาดยางดี 0%</option>
+                    <option value=".06">ขรุขระบางช่วง +6%</option>
+                    <option value=".12">ขรุขระมาก +12%</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="physics-method-card">
+              <strong>แบบจำลองทางฟิสิกส์</strong>
+              <span>คำนวณพลังงานศักย์จากน้ำหนัก × 9.80665 × ความสูงสะสม รถ EV/Hybrid หักพลังงานคืนจากขาลงตามประสิทธิภาพที่แสดงในรายละเอียดสูตร</span>
+            </div>
+          </div>
+        </div>
+
+        <div hidden aria-hidden="true">
+          <input id="totalDistanceInput" type="number" value="300">
+          <input id="distance" type="number" value="300">
+          <input id="roundTrip" type="checkbox">
+          <input id="trips" type="number" value="1">
+          <input id="passengers" type="number" value="1">
+          <input id="toll" type="number" value="0">
+          <input id="parking" type="number" value="0">
+          <input id="other" type="number" value="0">
+          <select id="wheel"><option value="0">0</option></select>
+          <select id="load"><option value="0">0</option></select>
+          <select id="tune"><option value="0">0</option></select>
+          <select id="traffic"><option value="0">0</option></select>
+          <select id="hill"><option value="0">0</option></select>
+          <select id="ac"><option value="0">0</option></select>
+          <strong id="factorValue">1.00×</strong>
+          <span id="factorSub">แสดงปัจจัยทุกตัวแยกในผลลัพธ์</span>
+        </div>
+
+        <button class="calc-btn" id="calcBtn">▣ &nbsp; คำนวณจากยอดเติมจริง</button>
       </section>
 
       <aside class="panel result-panel">
         <h2 class="result-title">ผลการคำนวณ</h2>
+
         <div class="hero">
           <div class="hero-copy">
-            <small>ต้นทุนรวมทั้งหมด</small>
-            <div class="hero-amount" id="totalCost">1,191.11 <span>บาท</span></div>
+            <small id="resultMetricLabel">ค่าเชื้อเพลิงจากยอดเติมจริง</small>
+            <div class="hero-amount" id="totalCost">1,100.00 <span>บาท</span></div>
             <div class="vehicle-label" id="vehicleLabel">Sedan 3D • Dark Metallic</div>
           </div>
           <div class="vehicle-stage" id="vehicleStage" data-vehicle="sedan" aria-hidden="true">
@@ -216,16 +490,16 @@
           </div>
         </div>
 
-        <div class="trust-bar" aria-label="ข้อมูลความน่าเชื่อถือของผลลัพธ์">
+        <div class="trust-bar" id="priceTrustBar" aria-label="ข้อมูลความน่าเชื่อถือของผลลัพธ์">
           <div class="trust-source">
             <span class="trust-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.4 8.2 8 9 4.6-.8 8-4 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg>
             </span>
             <div>
-              <small>แหล่งราคาที่ใช้</small>
-              <strong id="currentPriceSource">ข้อมูลตัวอย่างของระบบ</strong>
-              <span id="currentPriceUpdated">ไม่ใช่ราคาสด • ผู้ใช้แก้ไขได้</span>
-              <button type="button" class="inline-live-refresh" id="inlineLiveRefreshButton">อัปเดตราคาวันนี้</button>
+              <small id="trustBarLabel">คุณภาพข้อมูล</small>
+              <strong id="currentPriceSource">เต็มถังก่อนและหลัง</strong>
+              <span id="currentPriceUpdated">ใช้เลขไมล์และยอดจากใบเสร็จ</span>
+              <button type="button" class="inline-live-refresh" id="inlineLiveRefreshButton" hidden>อัปเดตราคาวันนี้</button>
             </div>
           </div>
           <button type="button" class="formula-button" data-go-page="calculation-details" id="calculationDetailsButton">
@@ -235,29 +509,24 @@
         </div>
 
         <div class="kpis">
-          <div class="kpi"><span>ใช้พลังงานทั้งหมด</span><strong id="energyUsed">16.55 <em>ลิตร</em></strong></div>
-          <div class="kpi"><span>ระยะทางรวม</span><strong id="totalDistance">500 <em>กม.</em></strong></div>
-          <div class="kpi"><span>ต้นทุนต่อกิโลเมตร</span><strong id="costPerKm">2.38 <em>บาท/กม.</em></strong></div>
-          <div class="kpi"><span>ต้นทุนต่อคน</span><strong id="costPerPerson">595.56 <em>บาท/คน</em></strong></div>
+          <div class="kpi"><span id="resultKpi1Label">ระยะทางจริง</span><strong id="energyUsed">300.00 <em>กม.</em></strong></div>
+          <div class="kpi"><span id="resultKpi2Label">ยอดเติมรวม</span><strong id="totalDistance">1,100.00 <em>บาท</em></strong></div>
+          <div class="kpi"><span id="resultKpi3Label">ต้นทุนจริงต่อกิโลเมตร</span><strong id="costPerKm">3.67 <em>บาท/กม.</em></strong></div>
+          <div class="kpi"><span id="resultKpi4Label">คุณภาพข้อมูล</span><strong id="energyPriceUsed">สูง <em>เต็มถัง</em></strong></div>
         </div>
 
-        <div class="breakdown">
-          <h3>สัดส่วนค่าใช้จ่าย</h3>
-          <div class="chart-wrap">
-            <div class="donut" id="donut"></div>
-            <div class="legend">
-              <div class="legend-row"><i style="background:var(--blue)"></i><span>พลังงาน</span><strong id="legendEnergy">87.5%</strong></div>
-              <div class="legend-row"><i style="background:var(--green)"></i><span>ค่าทางด่วน</span><strong id="legendToll">8.4%</strong></div>
-              <div class="legend-row"><i style="background:var(--orange)"></i><span>ค่าจอดรถ</span><strong id="legendParking">4.2%</strong></div>
-              <div class="legend-row"><i style="background:#3b82a3"></i><span>อื่น ๆ</span><strong id="legendOther">0%</strong></div>
-            </div>
+        <div class="result-breakdown-card">
+          <div class="result-breakdown-head">
+            <div><h3 id="resultBreakdownTitle">ยอดเติมจริงที่นำมารวม</h3><p>ทุกรายการแสดงแยก ไม่รวมปริมาณต่างหน่วย</p></div>
           </div>
+          <div id="resultBreakdown" class="result-breakdown-list"></div>
         </div>
 
-        <div class="insight">
-          <strong>☼ Insight</strong>
-          <p id="insightText">หากลดสภาพการจราจรจาก “รถติดปานกลาง” เป็น “รถติดน้อย” จะช่วยประหยัดได้ประมาณ</p>
-          <div class="save-pill"><span>↗ ประหยัดได้</span><strong id="savingValue">118.35 บาท</strong></div>
+        <div class="result-warning-list" id="resultWarnings" hidden></div>
+
+        <div class="insight real-drive-insight">
+          <strong id="resultInsightTitle">ผลจริงไม่ใช่ค่าประมาณ</strong>
+          <p id="insightText">ยอด 1,100 บาทจะยังคงเป็น 1,100 บาท ระบบคำนวณเพียงระยะทาง ต้นทุนต่อกิโลเมตร และอัตราสิ้นเปลืองจากข้อมูลจริง</p>
         </div>
 
         <div class="bottom-actions">
@@ -269,7 +538,6 @@
         <div class="footer-date" id="dateStamp"></div>
       </aside>
     </div>
-
   </section>
 
   <section class="page-view" id="page-scenarios">
@@ -422,7 +690,7 @@
           </div>
           <div class="formula-version">
             <span>สูตรคำนวณ</span>
-            <strong>v1.2.0</strong>
+            <strong>v2.0.0</strong>
           </div>
         </div>
 
@@ -451,9 +719,9 @@
         <div class="detail-side-section">
           <h3>ข้อจำกัดของผลลัพธ์</h3>
           <ul class="limitation-list">
-            <li>เป็นค่าประมาณจากอัตราสิ้นเปลืองและปัจจัยที่ผู้ใช้กรอก</li>
-            <li>สภาพรถ อากาศ ความเร็ว และพฤติกรรมการขับอาจทำให้ผลต่างจากความจริง</li>
-            <li>ควรใช้ราคาพลังงานและอัตราสิ้นเปลืองจากการใช้งานจริงเมื่อต้องการความแม่นยำสูง</li>
+            <li>โหมดเติมจริงแม่นตามคุณภาพเลขไมล์ ระดับถัง และใบเสร็จที่กรอก</li>
+            <li>โหมดประมาณและภูเขายังคงเป็นแบบจำลอง ควรเผื่อพลังงานสำรอง</li>
+            <li>ความสูงสะสม น้ำหนัก และอัตราสิ้นเปลืองจริงช่วยเพิ่มความแม่นยำของเส้นทางภูเขา</li>
           </ul>
         </div>
       </aside>
@@ -814,17 +1082,18 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="/core-app.js?v=3.0.1"></script>
+<script src="/drive-engine.js?v=3.1.0"></script>
+<script src="/core-app.js?v=3.1.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="/runtime-config.js"></script>
-<script src="/supabase-config.js?v=3.0.1"></script>
-<script src="/account-sync.js?v=3.0.1"></script>
-<script src="/app-v2.js?v=3.0.1"></script>
-<script src="/accessibility-status.js?v=3.0.1"></script>
-<script src="/provenance-calculation.js?v=3.0.1"></script>
-<script src="/live-prices.js?v=3.0.1"></script>
+<script src="/supabase-config.js?v=3.1.0"></script>
+<script src="/account-sync.js?v=3.1.0"></script>
+<script src="/app-v2.js?v=3.1.0"></script>
+<script src="/accessibility-status.js?v=3.1.0"></script>
+<script src="/provenance-calculation.js?v=3.1.0"></script>
+<script src="/live-prices.js?v=3.1.0"></script>
 
-<script src="/ui-guard.js?v=3.0.1"></script>
+<script src="/ui-guard.js?v=3.1.0"></script>
 
 
 </body>

@@ -13,6 +13,7 @@ const files = [
   "server/supabase-admin.js",
   "storage-scope.js",
   "production-bootstrap.js",
+  "drive-engine.js",
   "core-app.js",
   "supabase-config.js",
   "account-sync.js",

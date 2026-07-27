@@ -2377,3 +2377,486 @@ body {
     min-width: 0;
   }
 }
+
+
+/* ===== DriveCost v3.0.2 — Fuel-only calculation ===== */
+.fuel-only-route{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(240px,.8fr);
+  gap:14px;
+  align-items:end
+}
+.field-help{
+  display:block;
+  margin-top:7px;
+  color:var(--muted);
+  font-size:9px;
+  line-height:1.55
+}
+.fuel-only-badge,
+.fuel-only-equation{
+  display:grid;
+  gap:5px;
+  padding:14px 16px;
+  border:1px solid rgba(19,214,187,.28);
+  border-radius:13px;
+  background:linear-gradient(135deg,rgba(19,214,187,.09),rgba(47,143,255,.06))
+}
+.fuel-only-badge strong,
+.fuel-only-equation strong{
+  color:#ddfff8;
+  font-size:12px
+}
+.fuel-only-badge span,
+.fuel-only-equation span{
+  color:#8fa9bb;
+  font-size:9px;
+  line-height:1.55
+}
+.fuel-only-section{
+  display:grid;
+  gap:12px
+}
+.fuel-formula-card{
+  display:grid;
+  margin-top:12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  background:rgba(5,19,31,.48)
+}
+.fuel-formula-card h3{
+  margin:0;
+  padding:13px 15px;
+  border-bottom:1px solid var(--line);
+  font-size:11px
+}
+.fuel-formula-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:10px 15px;
+  border-bottom:1px solid var(--line)
+}
+.fuel-formula-row:last-child{border-bottom:0}
+.fuel-formula-row span{
+  color:var(--muted);
+  font-size:9px
+}
+.fuel-formula-row strong{
+  color:#dcebf5;
+  font-size:10px;
+  text-align:right
+}
+.fuel-formula-row.final{
+  background:rgba(19,214,187,.08)
+}
+.fuel-formula-row.final strong{
+  color:var(--teal);
+  font-size:13px
+}
+.fuel-only-insight{
+  margin-top:12px
+}
+@media(max-width:720px){
+  .fuel-only-route{
+    grid-template-columns:1fr
+  }
+}
+
+
+/* ===== DriveCost v3.1.0 — Real Drive ===== */
+
+.calculation-mode-shell{
+  display:grid;
+  gap:8px;
+  margin-bottom:14px
+}
+.calculation-mode-tabs{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px
+}
+.calculation-mode-tabs button{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  grid-template-rows:auto auto;
+  column-gap:9px;
+  row-gap:2px;
+  min-width:0;
+  padding:12px 13px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  color:#c8d8e4;
+  background:rgba(7,23,36,.74);
+  text-align:left
+}
+.calculation-mode-tabs button>span{
+  grid-row:1/3;
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  border-radius:10px;
+  color:#8ca6b8;
+  background:rgba(91,133,163,.12);
+  font-size:10px;
+  font-weight:900
+}
+.calculation-mode-tabs button strong{
+  min-width:0;
+  font-size:11px
+}
+.calculation-mode-tabs button small{
+  min-width:0;
+  color:var(--muted);
+  font-size:8px;
+  line-height:1.35
+}
+.calculation-mode-tabs button.active{
+  border-color:rgba(19,214,187,.54);
+  background:linear-gradient(135deg,rgba(19,214,187,.13),rgba(47,143,255,.07));
+  box-shadow:inset 0 0 0 1px rgba(19,214,187,.08)
+}
+.calculation-mode-tabs button.active>span{
+  color:#03241d;
+  background:var(--teal)
+}
+.calculation-mode-help{
+  padding:9px 12px;
+  border:1px solid rgba(19,214,187,.15);
+  border-radius:10px;
+  color:#93abbc;
+  background:rgba(19,214,187,.045);
+  font-size:9px;
+  line-height:1.55
+}
+.calculation-mode-panel[hidden]{
+  display:none!important
+}
+.shared-vehicle-section{
+  border-bottom-color:rgba(19,214,187,.21)
+}
+.driver-profile-card{
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:11px;
+  margin-top:12px;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(5,18,30,.52)
+}
+.driver-profile-card[data-available="true"]{
+  border-color:rgba(19,214,187,.34);
+  background:linear-gradient(135deg,rgba(19,214,187,.08),rgba(47,143,255,.04))
+}
+.driver-profile-icon{
+  display:grid;
+  place-items:center;
+  width:30px;
+  height:30px;
+  border-radius:10px;
+  color:var(--teal);
+  background:rgba(19,214,187,.11)
+}
+.driver-profile-card small,
+.driver-profile-card strong,
+.driver-profile-card span{
+  display:block
+}
+.driver-profile-card small{
+  color:var(--muted);
+  font-size:8px
+}
+.driver-profile-card strong{
+  margin-top:3px;
+  font-size:10px
+}
+.driver-profile-card span{
+  margin-top:2px;
+  color:#8fa7b8;
+  font-size:8px;
+  line-height:1.45
+}
+.driver-profile-card>b{
+  color:var(--teal);
+  font-size:14px
+}
+.direct-distance-toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:12px;
+  color:#b8c9d6;
+  font-size:9px
+}
+.direct-distance-toggle input{
+  width:16px;
+  height:16px;
+  accent-color:var(--teal)
+}
+.readonly-box{
+  color:var(--teal);
+  background:rgba(19,214,187,.06)
+}
+.readonly-box output{
+  display:block;
+  flex:1;
+  font-weight:850
+}
+.direct-distance-field{
+  max-width:420px
+}
+.actual-source-head,
+.actual-source-row{
+  display:grid;
+  grid-template-columns:minmax(180px,1.15fr) minmax(130px,.8fr) minmax(130px,.8fr);
+  gap:10px
+}
+.actual-source-head{
+  margin-bottom:6px;
+  padding:0 3px;
+  color:#6f889a;
+  font-size:8px
+}
+.actual-source-row{
+  padding:10px 0;
+  border-bottom:1px solid var(--line)
+}
+.actual-source-row:last-child{
+  border-bottom:0
+}
+.actual-learning-note,
+.transparent-formula-note,
+.mountain-elevation-note{
+  margin-top:10px;
+  padding:10px 12px;
+  border-left:3px solid var(--teal);
+  border-radius:0 9px 9px 0;
+  color:#91a9ba;
+  background:rgba(19,214,187,.055);
+  font-size:8px;
+  line-height:1.55
+}
+.actual-save-record{
+  width:100%;
+  margin-top:11px
+}
+.actual-records{
+  margin-top:13px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  overflow:hidden
+}
+.actual-records-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:11px 12px;
+  border-bottom:1px solid var(--line);
+  background:rgba(7,23,36,.55)
+}
+.actual-records-head strong,
+.actual-records-head span{
+  display:block
+}
+.actual-records-head strong{
+  font-size:9px
+}
+.actual-records-head span{
+  margin-top:2px;
+  color:var(--muted);
+  font-size:7px
+}
+.actual-records-list{
+  display:grid
+}
+.actual-record-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:10px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--line)
+}
+.actual-record-row:last-child{
+  border-bottom:0
+}
+.actual-record-row strong,
+.actual-record-row span{
+  display:block
+}
+.actual-record-row strong{
+  font-size:9px
+}
+.actual-record-row span{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:7px;
+  line-height:1.45
+}
+.actual-record-empty,
+.result-breakdown-empty{
+  padding:18px;
+  color:var(--muted);
+  text-align:center;
+  font-size:9px
+}
+.physics-method-card{
+  display:grid;
+  gap:4px;
+  margin-top:11px;
+  padding:12px 14px;
+  border:1px solid rgba(47,143,255,.2);
+  border-radius:11px;
+  background:rgba(47,143,255,.055)
+}
+.physics-method-card strong{
+  color:#b9d8ff;
+  font-size:9px
+}
+.physics-method-card span{
+  color:#8fa7b8;
+  font-size:8px;
+  line-height:1.55
+}
+.result-breakdown-card{
+  margin-top:12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  overflow:hidden;
+  background:rgba(5,18,30,.48)
+}
+.result-breakdown-head{
+  padding:12px 14px;
+  border-bottom:1px solid var(--line)
+}
+.result-breakdown-head h3{
+  margin:0;
+  font-size:10px
+}
+.result-breakdown-head p{
+  margin:3px 0 0;
+  color:var(--muted);
+  font-size:7px
+}
+.result-breakdown-list{
+  display:grid
+}
+.result-breakdown-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  border-bottom:1px solid var(--line)
+}
+.result-breakdown-row:last-child{
+  border-bottom:0
+}
+.result-breakdown-row>div strong,
+.result-breakdown-row>div span{
+  display:block
+}
+.result-breakdown-row>div strong{
+  font-size:9px
+}
+.result-breakdown-row>div span{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:7px;
+  line-height:1.45
+}
+.result-breakdown-row>b{
+  color:#dceaf4;
+  font-size:9px;
+  white-space:nowrap
+}
+.result-breakdown-row.negative>b{
+  color:#78d8ff
+}
+.result-breakdown-row.total{
+  padding-top:12px;
+  padding-bottom:12px;
+  color:var(--teal);
+  background:rgba(19,214,187,.07)
+}
+.result-breakdown-row.total strong,
+.result-breakdown-row.total b{
+  font-size:11px
+}
+.result-warning-list{
+  display:grid;
+  gap:6px;
+  margin-top:10px
+}
+.result-warning-list[hidden]{
+  display:none
+}
+.result-warning-list>div{
+  padding:8px 10px;
+  border:1px solid rgba(255,193,93,.22);
+  border-radius:9px;
+  color:#ffd36a;
+  background:rgba(255,193,93,.055);
+  font-size:8px;
+  line-height:1.5
+}
+.real-drive-insight{
+  margin-top:12px
+}
+
+@media(max-width:900px){
+  .calculation-mode-tabs{
+    grid-template-columns:1fr
+  }
+  .calculation-mode-tabs button{
+    grid-template-columns:auto 1fr auto;
+    grid-template-rows:auto
+  }
+  .calculation-mode-tabs button>span{
+    grid-row:auto
+  }
+  .calculation-mode-tabs button small{
+    text-align:right
+  }
+}
+@media(max-width:720px){
+  .actual-source-head{
+    display:none
+  }
+  .actual-source-row{
+    grid-template-columns:1fr
+  }
+  .driver-profile-card{
+    grid-template-columns:auto 1fr
+  }
+  .driver-profile-card>b{
+    grid-column:2
+  }
+}
+@media(max-width:520px){
+  .calculation-mode-tabs button{
+    grid-template-columns:auto 1fr;
+    grid-template-rows:auto auto
+  }
+  .calculation-mode-tabs button>span{
+    grid-row:1/3
+  }
+  .calculation-mode-tabs button small{
+    text-align:left
+  }
+  .actual-records-head{
+    align-items:flex-start
+  }
+  .result-breakdown-row{
+    grid-template-columns:1fr
+  }
+  .result-breakdown-row>b{
+    text-align:right
+  }
+}

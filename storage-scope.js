@@ -9,6 +9,7 @@
     "drivecost-v2-price-updated",
     "drivecost-v2-settings",
     "drivecost-v2-draft",
+    "drivecost-v3-actual-fill-records",
     "drivecost-v2.1-accessibility",
     "drivecost-live-price-settings-v1",
     "drivecost-live-prices-v1",

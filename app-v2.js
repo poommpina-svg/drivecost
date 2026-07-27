@@ -16,7 +16,8 @@
     priceMeta: "drivecost-v2-price-metadata",
     priceUpdated: "drivecost-v2-price-updated",
     settings: "drivecost-v2-settings",
-    draft: "drivecost-v2-draft"
+    draft: "drivecost-v2-draft",
+    actualFills: "drivecost-v3-actual-fill-records"
   };
 
   const memoryStorage = {};
@@ -36,7 +37,7 @@
   };
 
   const pageMeta = {
-    calculator: ["คำนวณค่าใช้จ่ายการเดินทาง", "คำนวณได้ทุกพลังงาน • ทุกเส้นทาง • ทุกรูปแบบการขับขี่"],
+    calculator: ["ค่าเชื้อเพลิงจริงและเส้นทาง", "เติมจริง • ประมาณก่อนเดินทาง • ภูเขาแบบแยกทุกปัจจัย"],
     scenarios: ["สถานการณ์ของฉัน", "เปิดและจัดการรายการที่บันทึกไว้ในอุปกรณ์นี้"],
     vehicles: ["รถของฉัน", "เลือกโมเดลรถ 3D ที่ต้องการใช้กับเครื่องคำนวณ"],
     compare: ["เปรียบเทียบ", "เปรียบเทียบต้นทุนรถสองประเภทบนระยะทางเดียวกัน"],
@@ -177,7 +178,7 @@
         <article class="list-item">
           <div>
             <strong>${escapeHtml(item.name)}</strong>
-            <span>${escapeHtml(vehicleName)} • ${fmt(result.totalDistance, 0)} กม. • ${fmt(result.total, 2)} บาท • ${escapeHtml(item.priceSource?.sourceName || "ไม่ระบุแหล่งราคา")}</span>
+            <span>${escapeHtml(result.calculationLabel || "ประมาณการ")} • ${escapeHtml(vehicleName)} • ${fmt(result.totalDistance, 0)} กม. • ${fmt(result.total, 2)} บาท • ${escapeHtml(item.priceSource?.sourceName || "ข้อมูลผู้ใช้")}</span>
           </div>
           <div class="list-actions">
             <button type="button" class="mini-btn" data-load-scenario="${index}">เปิด</button>
@@ -245,7 +246,7 @@
         <article class="list-item">
           <div>
             <strong>${escapeHtml(vehicleName)} • ${fmt(item.total, 2)} บาท</strong>
-            <span>${fmt(item.totalDistance, 0)} กม. • ${escapeHtml(item.energyType || "")} • ${escapeHtml(item.priceSource?.sourceName || "ไม่ระบุแหล่งราคา")} • ${new Date(item.createdAt).toLocaleString("th-TH")}</span>
+            <span>${escapeHtml(item.calculationLabel || "ประมาณการ")} • ${fmt(item.totalDistance, 0)} กม. • ${escapeHtml(item.energyType || "")} • ${escapeHtml(item.priceSource?.sourceName || "ข้อมูลผู้ใช้")} • ${new Date(item.createdAt).toLocaleString("th-TH")}</span>
           </div>
         </article>`;
     }).join("");
@@ -589,6 +590,7 @@
       autoDraft: true
     }));
     storage.setItem(KEYS.draft, "{}");
+    storage.setItem(KEYS.actualFills, "[]");
 
     window.DriveCostUI?.refresh?.();
     toast("ล้างข้อมูลแล้ว");
@@ -626,6 +628,7 @@
       renderVehicles();
       renderPrices();
       renderCompare();
+      core.refreshPersonalization?.();
     },
     refreshDataLists() {
       applyStoredPrices();
@@ -634,6 +637,7 @@
       renderHistory();
       renderPrices();
       renderCompare();
+      core.refreshPersonalization?.();
     }
   };
 

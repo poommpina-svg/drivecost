@@ -1,6 +1,6 @@
 "use strict";
 
-const APP_VERSION = "3.0.1";
+const APP_VERSION = "3.1.0";
 
 function text(name, fallback = "") {
   return String(process.env[name] ?? fallback).trim();
