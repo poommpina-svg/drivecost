@@ -2197,3 +2197,183 @@ body {
 .production-admin-entry a:focus-visible {
   text-decoration: underline;
 }
+
+
+/* ===== DriveCost v3.0.1 — Mobile header and safe-area fix ===== */
+
+@media (max-width: 1024px) {
+  .page-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .page-head > div:first-child {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .page-head h1 {
+    max-width: 100%;
+    line-height: 1.25;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .page-head p {
+    max-width: 100%;
+    line-height: 1.55;
+    white-space: normal;
+  }
+
+  .head-actions {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-column: auto !important;
+    order: 2;
+    width: 100%;
+    gap: 8px;
+    justify-content: stretch !important;
+  }
+
+  .head-actions .btn {
+    min-width: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.35;
+  }
+
+  .utility-actions {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    order: 3;
+    width: 100%;
+    min-width: 0;
+    margin-left: 0 !important;
+    gap: 8px;
+  }
+
+  .system-chip,
+  .utility-button,
+  .account-chip {
+    width: 100% !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+    padding: 8px !important;
+  }
+
+  .system-chip-copy,
+  .utility-button > span,
+  .account-chip-copy {
+    display: none !important;
+  }
+
+  .account-chip .sync-indicator {
+    position: absolute;
+    right: 6px;
+    bottom: 6px;
+    width: 7px;
+    height: 7px;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
+
+  .content {
+    width: 100%;
+    max-width: 100%;
+    padding:
+      14px
+      10px
+      calc(26px + env(safe-area-inset-bottom));
+  }
+
+  .page-head {
+    gap: 9px !important;
+  }
+
+  .page-head h1 {
+    font-size: 21px;
+    line-height: 1.28;
+    letter-spacing: -.02em;
+  }
+
+  .page-head p {
+    margin-top: 5px;
+    font-size: 10px;
+  }
+
+  .head-actions .btn {
+    min-height: 44px;
+    padding: 9px 8px;
+    font-size: 10px;
+  }
+
+  .utility-actions {
+    gap: 7px;
+  }
+
+  .system-chip,
+  .utility-button,
+  .account-chip {
+    min-height: 44px;
+    border-radius: 11px;
+  }
+
+  .form-panel {
+    padding: 10px;
+  }
+
+  .section {
+    padding: 12px;
+  }
+
+  .section-head h2 {
+    min-width: 0;
+    line-height: 1.35;
+  }
+
+  .mobile-nav {
+    height: calc(64px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .toast {
+    right: 10px;
+    left: 10px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    text-align: center;
+  }
+}
+
+@media (max-width: 380px) {
+  .content {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .head-actions .btn {
+    font-size: 9px;
+  }
+
+  .grid4,
+  .grid3 {
+    gap: 8px;
+  }
+
+  .field-box {
+    min-width: 0;
+  }
+}
