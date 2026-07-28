@@ -1,0 +1,11 @@
+[
+  {
+    "OilPriceID": 3404,
+    "OilDateNow": "28/07/2569",
+    "OilPriceDate": "22/07/2569",
+    "OilPriceTime": "19:50",
+    "OilRemark": "หมายเหตุ: ราคาขายปลีก กทม. ที่ยังไม่รวมภาษีบำรุงท้องถิ่น กทม.",
+    "OilRemark2": "ราคามีผล ณ วันที่ 23 ก.ค. 69 เวลา 05.00 น.",
+    "OilList": "[{\"OilName\": \"แก๊สโซฮอล์ E85 S EVO\", \"PriceYesterday\": 26.73, \"PriceToday\": 27.63, \"PriceTomorrow\": 27.63}, {\"OilName\": \"แก๊สโซฮอล์ E20 S EVO\", \"PriceYesterday\": 30.79, \"PriceToday\": 31.69, \"PriceTomorrow\": 31.69}, {\"OilName\": \"แก๊สโซฮอล์ 91 S EVO\", \"PriceYesterday\": 35.42, \"PriceToday\": 36.32, \"PriceTomorrow\": 36.32}]"
+  }
+]

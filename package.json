@@ -1,6 +1,6 @@
 {
   "name": "drivecost-production",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "private": true,
   "description": "DriveCost production web service for Render with Supabase and an administrator integrity center",
   "license": "UNLICENSED",

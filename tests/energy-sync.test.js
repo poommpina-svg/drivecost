@@ -93,3 +93,15 @@ test("normal catalog does not offer unsupported Benzine 91", () => {
 test("legacy Benzine 91 cannot borrow a Gasohol 91 price", () => {
   assert.match(live, /"เบนซิน 91":\s*\[\]/);
 });
+
+
+test("E85 card preserves the Bangchak per-item source", () => {
+  assert.match(live, /item\.provider \|\| data\.provider/);
+  assert.match(live, /item\.sourceUrl \|\| data\.sourceUrl/);
+  assert.match(live, /แหล่งราคา:/);
+});
+
+test("price metadata uses the selected product provider instead of always OR", () => {
+  assert.match(live, /const provider = item\.provider \|\| payload\.provider/);
+  assert.match(live, /const sourceUrl = item\.sourceUrl \|\| payload\.sourceUrl/);
+});

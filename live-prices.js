@@ -197,7 +197,11 @@
         product: String(item.product || item.label || ""),
         price: Number(item.price),
         unit: item.unit === "THB/KG" ? "THB/KG" : "THB/L",
-        effectiveAt: item.effectiveAt || data.effectiveAt || null
+        effectiveAt: item.effectiveAt || data.effectiveAt || null,
+        provider: String(item.provider || data.provider || "ผู้ให้บริการทางการ"),
+        sourceLabel: String(item.sourceLabel || item.provider || data.provider || ""),
+        sourceUrl: String(item.sourceUrl || data.sourceUrl || SOURCE_URL),
+        sourceNote: String(item.sourceNote || "")
       }))
       .filter(item =>
         productTarget[item.id] &&
@@ -211,7 +215,8 @@
 
     return {
       provider: String(data.provider || "PTT OR OilPrice Web Service"),
-      sourceUrl: SOURCE_URL,
+      sourceUrl: String(data.sourceUrl || SOURCE_URL),
+      sources: Array.isArray(data.sources) ? data.sources : [],
       fetchedAt: data.fetchedAt || new Date().toISOString(),
       effectiveAt: data.effectiveAt || prices.find(item => item.effectiveAt)?.effectiveAt || null,
       stale: Boolean(data.stale),
@@ -313,7 +318,8 @@
     unit.textContent = core.energyData[core.mode]?.priceUnit || "บาท/หน่วย";
 
     if (selected) {
-      source.textContent = `${displayProductLabel(selected)} • ${payload?.provider || "แหล่งราคาพลังงาน"}`;
+      source.textContent =
+        `${displayProductLabel(selected)} • ${selected.provider || payload?.provider || "แหล่งราคาพลังงาน"}`;
     } else if (metadata.sourceName) {
       source.textContent = metadata.sourceName;
     } else {
@@ -388,7 +394,9 @@
           <small class="fuel-family">${escapeHtml(productFamily(item))}</small>
           <strong>${escapeHtml(displayProductLabel(item))}</strong>
           <span class="fuel-raw-name">${escapeHtml(item.product)}</span>
+          <span class="fuel-provider">แหล่งราคา: ${escapeHtml(item.sourceLabel || item.provider || payload.provider)}</span>
           <b>${fmt(item.price, 2)} <span>${unit}</span></b>
+          <span class="fuel-effective-date">มีผล ${escapeHtml(formatDate(item.effectiveAt || payload.effectiveAt))}</span>
           <button type="button"
                   data-use-live-price="${escapeHtml(item.id)}"
                   data-state="${active ? "selected" : "idle"}"
@@ -523,14 +531,23 @@
     selectedProductId = item.id;
     const prices = parse(storageGet(PRICE_KEY), {});
     const metadata = parse(storageGet(META_KEY), {});
-    const updatedAt = item.effectiveAt || payload.effectiveAt || payload.fetchedAt || new Date().toISOString();
+    const updatedAt =
+      item.effectiveAt ||
+      payload.effectiveAt ||
+      payload.fetchedAt ||
+      new Date().toISOString();
+    const provider = item.provider || payload.provider;
+    const sourceUrl = item.sourceUrl || payload.sourceUrl || SOURCE_URL;
 
     prices[mode] = item.price;
     metadata[mode] = {
       sourceType: "external",
-      sourceName: payload.provider,
-      sourceUrl: SOURCE_URL,
-      note: `${item.label} (${item.product}) • ราคาขายปลีกอ้างอิงจาก OR` +
+      sourceName: provider,
+      sourceUrl,
+      note:
+        `${displayProductLabel(item)} (${item.product}) • ` +
+        `ราคาขายปลีกอ้างอิงจาก ${provider}` +
+        (item.sourceNote ? ` • ${item.sourceNote}` : "") +
         (payload.stale ? " • ใช้ข้อมูลแคชเนื่องจากอัปเดตสดไม่สำเร็จ" : ""),
       updatedAt,
       fetchedAt: payload.fetchedAt,
@@ -637,7 +654,7 @@
     }
     if (buttonLabel) buttonLabel.textContent = "กำลังอัปเดต…";
 
-    setStatus("กำลังเชื่อมต่อกับระบบราคาน้ำมันของ OR", "checking");
+    setStatus("กำลังเชื่อมต่อระบบราคาทางการของ OR และ Bangchak", "checking");
 
     refreshPromise = (async () => {
       try {
@@ -677,7 +694,11 @@
         applyCurrentSelection({ force: true });
 
         showToast(payload.stale ? "ใช้ราคาที่แคชไว้ล่าสุด" : "อัปเดตราคาน้ำมันแล้ว");
-        announce(payload.stale ? "ใช้ราคาที่แคชไว้ล่าสุด" : "อัปเดตราคาน้ำมันจาก OR สำเร็จ");
+        announce(
+          payload.stale
+            ? "ใช้ราคาที่แคชไว้ล่าสุด"
+            : "อัปเดตราคาน้ำมันจากผู้ให้บริการทางการสำเร็จ"
+        );
         return payload;
       } catch (error) {
         const cached = readCachedPayload();

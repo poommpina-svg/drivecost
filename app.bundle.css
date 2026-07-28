@@ -3234,3 +3234,41 @@ body {
 .live-price-card button[data-state="selected"]::before{
   content:none!important
 }
+
+
+/* ===== DriveCost v3.1.5 — official E85 source ===== */
+
+.live-price-card .fuel-provider,
+.live-price-card .fuel-effective-date{
+  display:block;
+  color:#83a0b3;
+  font-size:7px;
+  line-height:1.4
+}
+.live-price-card[data-live-card="gasoholE85"]{
+  border-color:rgba(72,187,120,.34);
+  background:linear-gradient(145deg,rgba(72,187,120,.08),rgba(8,24,36,.78))
+}
+.live-price-card[data-live-card="gasoholE85"] .fuel-provider{
+  color:#8ee7b2;
+  font-weight:800
+}
+.official-source-links{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  flex-wrap:wrap
+}
+.official-source-links a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:28px;
+  padding:5px 10px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  color:#9fc5ff;
+  background:rgba(47,143,255,.055);
+  font-size:8px;
+  text-decoration:none
+}

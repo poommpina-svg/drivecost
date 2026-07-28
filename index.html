@@ -1,18 +1,18 @@
 <!doctype html>
 <html lang="th">
 <head>
-<script src="/storage-scope.js?v=3.1.4"></script>
+<script src="/storage-scope.js?v=3.1.5"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#06111d">
   <meta name="description" content="DriveCost - คำนวณค่าเชื้อเพลิงจริงและเส้นทางสำหรับรถน้ำมัน ก๊าซ ไฮบริด EV และรถดัดแปลง">
-  <link rel="manifest" href="/manifest.json?v=3.1.4">
+  <link rel="manifest" href="/manifest.json?v=3.1.5">
 <meta name="application-name" content="DriveCost">
 <meta name="description" content="คำนวณค่าเดินทางและจัดเก็บข้อมูลแยกตามบัญชีอย่างปลอดภัย">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="/">
-  <title>DriveCost v3.1.4</title>
-  <link rel="stylesheet" href="/app.bundle.css?v=3.1.4">
+  <title>DriveCost v3.1.5</title>
+  <link rel="stylesheet" href="/app.bundle.css?v=3.1.5">
   
   
   
@@ -20,7 +20,7 @@
   
 
 
-<script src="/production-bootstrap.js?v=3.1.4"></script>
+<script src="/production-bootstrap.js?v=3.1.5"></script>
 
 
 
@@ -52,7 +52,7 @@
     <span class="sidebar-status-dot" aria-hidden="true"></span>
     <span>ข้อมูลเก็บในอุปกรณ์นี้</span>
   </div>
-  <div class="version">DriveCost v3.1.4</div>
+  <div class="version">DriveCost v3.1.5</div>
   </aside>
 
   <main class="content">
@@ -738,7 +738,7 @@
             <span class="live-price-signal checking" id="livePriceSignal" aria-hidden="true"></span>
             <div>
               <span class="detail-eyebrow">Automatic price update</span>
-              <h3 id="livePriceTitle">ราคาน้ำมันวันนี้จาก OR</h3>
+              <h3 id="livePriceTitle">ราคาน้ำมันจาก OR และ Bangchak</h3>
               <p id="livePriceStatusText">ระบบอัปเดตให้อัตโนมัติ ไม่จำเป็นต้องกดปุ่มซ้ำ</p>
             </div>
           </div>
@@ -756,7 +756,7 @@
         </div>
 
         <div class="live-price-meta">
-          <div><span>ผู้ให้ข้อมูล</span><strong id="livePriceProvider">PTT OR OilPrice Web Service</strong></div>
+          <div><span>ผู้ให้ข้อมูล</span><strong id="livePriceProvider">OR + Bangchak Official Price Services</strong></div>
           <div><span>วันที่ราคามีผล</span><strong id="livePriceEffectiveAt">ยังไม่มีข้อมูล</strong></div>
           <div><span>ดึงข้อมูลล่าสุด</span><strong id="livePriceFetchedAt">ยังไม่มีข้อมูล</strong></div>
           <div><span>สถานะข้อมูล</span><strong id="livePriceFreshness">กำลังตรวจสอบ</strong></div>
@@ -768,8 +768,12 @@
 
         <div class="live-price-footer">
           <p id="livePriceDisclaimer">ราคาขายปลีกอาจแตกต่างตามพื้นที่ ภาษีท้องถิ่น และสถานีบริการ</p>
-          <a href="https://orapiweb.pttor.com/oilservice/OilPrice.asmx"
-             target="_blank" rel="noopener noreferrer">เปิดแหล่งข้อมูลทางการ</a>
+          <div class="official-source-links">
+            <a href="https://orapiweb.pttor.com/oilservice/OilPrice.asmx"
+               target="_blank" rel="noopener noreferrer">OR</a>
+            <a href="https://oil-price.bangchak.co.th/ApiOilPrice2/th"
+               target="_blank" rel="noopener noreferrer">Bangchak</a>
+          </div>
         </div>
       </section>
 
@@ -1178,7 +1182,7 @@
       <div class="status-row"><span>ข้อมูลที่บันทึกในเครื่อง</span><strong id="localDataValue">0 รายการ</strong></div>
       <div class="status-row"><span>พื้นที่จัดเก็บ</span><strong id="storageStatusValue">กำลังตรวจสอบ</strong></div>
       <div class="status-row"><span>โหมดการเปิดแอพ</span><strong id="displayModeValue">เว็บเบราว์เซอร์</strong></div>
-      <div class="status-row"><span>เวอร์ชันแอพ</span><strong>3.1.4</strong></div>
+      <div class="status-row"><span>เวอร์ชันแอพ</span><strong>3.1.5</strong></div>
       <div class="status-row"><span>เวอร์ชันสูตรคำนวณ</span><strong>2.0.0</strong></div>
     </div>
 
@@ -1201,18 +1205,18 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="/drive-engine.js?v=3.1.4"></script>
-<script src="/core-app.js?v=3.1.4"></script>
+<script src="/drive-engine.js?v=3.1.5"></script>
+<script src="/core-app.js?v=3.1.5"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="/runtime-config.js"></script>
-<script src="/supabase-config.js?v=3.1.4"></script>
-<script src="/account-sync.js?v=3.1.4"></script>
-<script src="/app-v2.js?v=3.1.4"></script>
-<script src="/accessibility-status.js?v=3.1.4"></script>
-<script src="/provenance-calculation.js?v=3.1.4"></script>
-<script src="/live-prices.js?v=3.1.4"></script>
+<script src="/supabase-config.js?v=3.1.5"></script>
+<script src="/account-sync.js?v=3.1.5"></script>
+<script src="/app-v2.js?v=3.1.5"></script>
+<script src="/accessibility-status.js?v=3.1.5"></script>
+<script src="/provenance-calculation.js?v=3.1.5"></script>
+<script src="/live-prices.js?v=3.1.5"></script>
 
-<script src="/ui-guard.js?v=3.1.4"></script>
+<script src="/ui-guard.js?v=3.1.5"></script>
 
 
 </body>

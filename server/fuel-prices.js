@@ -7,6 +7,7 @@ const { config } = require("./config");
 
 const ROOT = path.resolve(__dirname, "..");
 const UPSTREAM = config.fuelUpstream;
+const BANGCHAK_UPSTREAM = config.bangchakFuelUpstream;
 const CACHE_TTL_MS = config.fuelCacheTtlMs;
 const STALE_TTL_MS = config.fuelStaleTtlMs;
 const MAX_UPSTREAM_BYTES = 1_000_000;
@@ -15,11 +16,11 @@ let memoryCache = null;
 let upstreamRequestInFlight = null;
 
 const labels = {
-  gasoline95: "เบนซิน 95",
-  gasoline91: "เบนซิน 91",
-  gasohol95: "แก๊สโซฮอล์ 95",
-  premiumGasohol95: "แก๊สโซฮอล์ 95 พรีเมียม",
-  gasohol91: "แก๊สโซฮอล์ 91",
+  gasoline95: "เบนซิน 95 (ไม่มีเอทานอล)",
+  gasoline91: "เบนซิน 91 (ไม่มีเอทานอล)",
+  gasohol95: "แก๊สโซฮอล์ 95 (E10)",
+  premiumGasohol95: "แก๊สโซฮอล์ 95 พรีเมียม (E10)",
+  gasohol91: "แก๊สโซฮอล์ 91 (E10)",
   gasoholE20: "แก๊สโซฮอล์ E20",
   gasoholE85: "แก๊สโซฮอล์ E85",
   diesel: "ดีเซล",
@@ -208,7 +209,10 @@ function parseSoapResponse(xmlText) {
       product,
       price,
       unit: id === "ngv" ? "THB/KG" : "THB/L",
-      effectiveAt: effectiveAt || null
+      effectiveAt: effectiveAt || null,
+      provider: "PTT OR OilPrice Web Service",
+      sourceLabel: "OR",
+      sourceUrl: UPSTREAM
     };
   }).filter(Boolean);
 
@@ -237,6 +241,233 @@ function parseSoapResponse(xmlText) {
   const effectiveAt = dates.length ? new Date(Math.max(...dates)).toISOString() : null;
 
   return { prices, effectiveAt };
+}
+
+
+const THAI_MONTHS = Object.freeze({
+  "ม.ค.": 1,
+  "ก.พ.": 2,
+  "มี.ค.": 3,
+  "เม.ย.": 4,
+  "พ.ค.": 5,
+  "มิ.ย.": 6,
+  "ก.ค.": 7,
+  "ส.ค.": 8,
+  "ก.ย.": 9,
+  "ต.ค.": 10,
+  "พ.ย.": 11,
+  "ธ.ค.": 12
+});
+
+function isoFromThaiEffectiveRemark(value) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  const match = text.match(
+    /วันที่\s*(\d{1,2})\s*(ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.)\s*(\d{2,4})\s*เวลา\s*(\d{1,2})[.:](\d{2})/
+  );
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  const month = THAI_MONTHS[match[2]];
+  let buddhistYear = Number(match[3]);
+  if (buddhistYear < 100) buddhistYear += 2500;
+  const year = buddhistYear - 543;
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+
+  if (
+    !month ||
+    year < 2000 || year > 2200 ||
+    day < 1 || day > 31 ||
+    hour < 0 || hour > 23 ||
+    minute < 0 || minute > 59
+  ) {
+    return null;
+  }
+
+  const isoLocal =
+    `${String(year).padStart(4, "0")}-` +
+    `${String(month).padStart(2, "0")}-` +
+    `${String(day).padStart(2, "0")}T` +
+    `${String(hour).padStart(2, "0")}:` +
+    `${String(minute).padStart(2, "0")}:00+07:00`;
+
+  const parsed = new Date(isoLocal);
+  return Number.isFinite(parsed.getTime()) ? parsed.toISOString() : null;
+}
+
+function isoFromBangchakDate(value, time = "00:00") {
+  const match = String(value || "").trim().match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+  );
+  if (!match) return null;
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const buddhistYear = Number(match[3]);
+  const year = buddhistYear - 543;
+  const timeMatch = String(time || "").match(/^(\d{1,2}):(\d{2})$/);
+  const hour = timeMatch ? Number(timeMatch[1]) : 0;
+  const minute = timeMatch ? Number(timeMatch[2]) : 0;
+
+  const isoLocal =
+    `${String(year).padStart(4, "0")}-` +
+    `${String(month).padStart(2, "0")}-` +
+    `${String(day).padStart(2, "0")}T` +
+    `${String(hour).padStart(2, "0")}:` +
+    `${String(minute).padStart(2, "0")}:00+07:00`;
+
+  const parsed = new Date(isoLocal);
+  return Number.isFinite(parsed.getTime()) ? parsed.toISOString() : null;
+}
+
+function parseBangchakResponse(data) {
+  const record = Array.isArray(data) ? data[0] : data;
+  if (!record || typeof record !== "object") {
+    throw new Error("Bangchak ส่งข้อมูลในรูปแบบที่ไม่รองรับ");
+  }
+
+  let list = record.OilList;
+  if (typeof list === "string") {
+    try {
+      list = JSON.parse(list);
+    } catch {
+      throw new Error("อ่านรายการ OilList ของ Bangchak ไม่สำเร็จ");
+    }
+  }
+
+  if (!Array.isArray(list)) {
+    throw new Error("Bangchak ไม่ได้ส่ง OilList กลับมา");
+  }
+
+  const effectiveAt =
+    isoFromThaiEffectiveRemark(record.OilRemark2) ||
+    isoFromBangchakDate(record.OilPriceDate, record.OilPriceTime);
+
+  const rows = list.map(item => {
+    const product = String(item?.OilName || "").trim();
+    const id = normalizeProductId(product);
+    const price = Number(item?.PriceToday);
+
+    if (!id || !Number.isFinite(price) || price <= 0 || price >= 200) {
+      return null;
+    }
+
+    return {
+      id,
+      label: labels[id] || product,
+      product,
+      price,
+      unit: id === "ngv" ? "THB/KG" : "THB/L",
+      effectiveAt,
+      provider: "Bangchak Official Oil Price API",
+      sourceLabel: "บางจาก",
+      sourceUrl: BANGCHAK_UPSTREAM,
+      sourceNote: String(record.OilRemark || "").replace(/\s+/g, " ").trim()
+    };
+  }).filter(Boolean);
+
+  if (!rows.length) {
+    throw new Error("Bangchak ส่งรายการกลับมาแต่ไม่มีชนิดที่แอปรองรับ");
+  }
+
+  const deduped = new Map();
+  for (const row of rows) deduped.set(row.id, row);
+
+  return {
+    prices: [...deduped.values()],
+    effectiveAt,
+    provider: "Bangchak Official Oil Price API",
+    sourceUrl: BANGCHAK_UPSTREAM
+  };
+}
+
+async function readBangchakFixture() {
+  const fixture = process.env.BANGCHAK_PRICE_FIXTURE;
+  if (!fixture) return null;
+  const absolute = path.resolve(ROOT, fixture);
+  const json = JSON.parse(await fsp.readFile(absolute, "utf8"));
+  return parseBangchakResponse(json);
+}
+
+async function requestBangchakJson() {
+  const fixture = await readBangchakFixture();
+  if (fixture) return fixture;
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 7000);
+
+  try {
+    const response = await fetch(BANGCHAK_UPSTREAM, {
+      method: "GET",
+      headers: {
+        "Accept": "application/json",
+        "User-Agent": "DriveCost/3.1.5 (+Render production)"
+      },
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`Bangchak ตอบกลับ HTTP ${response.status}`);
+    }
+
+    const contentLength = Number(response.headers.get("content-length") || 0);
+    if (contentLength > MAX_UPSTREAM_BYTES) {
+      throw new Error("ข้อมูลจาก Bangchak มีขนาดใหญ่เกินกำหนด");
+    }
+
+    const text = await response.text();
+    if (Buffer.byteLength(text) > MAX_UPSTREAM_BYTES) {
+      throw new Error("ข้อมูลจาก Bangchak มีขนาดใหญ่เกินกำหนด");
+    }
+
+    return parseBangchakResponse(JSON.parse(text));
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function newestEffectiveAt(prices) {
+  const times = prices
+    .map(item => Date.parse(item.effectiveAt))
+    .filter(Number.isFinite);
+  return times.length
+    ? new Date(Math.max(...times)).toISOString()
+    : null;
+}
+
+function mergeOfficialPrices(orResult, bangchakResult) {
+  const merged = new Map();
+
+  if (orResult?.prices) {
+    for (const item of orResult.prices) {
+      merged.set(item.id, {
+        ...item,
+        provider: item.provider || "PTT OR OilPrice Web Service",
+        sourceLabel: item.sourceLabel || "OR",
+        sourceUrl: item.sourceUrl || UPSTREAM
+      });
+    }
+  }
+
+  if (bangchakResult?.prices) {
+    for (const item of bangchakResult.prices) {
+      // E85 is always sourced from Bangchak because the current OR response
+      // does not provide it. Other Bangchak rows are used only as fallback.
+      if (item.id === "gasoholE85" || !merged.has(item.id)) {
+        merged.set(item.id, item);
+      }
+    }
+  }
+
+  const prices = [...merged.values()];
+  if (!prices.length) {
+    throw new Error("ไม่พบราคาจากผู้ให้บริการทางการ");
+  }
+
+  return {
+    prices,
+    effectiveAt: newestEffectiveAt(prices)
+  };
 }
 
 async function readFixture() {
@@ -306,7 +537,7 @@ async function requestPttSoap(operation, language) {
       headers: {
         "Content-Type": "text/xml; charset=utf-8",
         "SOAPAction": `"https://orapiweb.pttor.com/${operation}"`,
-        "User-Agent": "DriveCost/3.1.4 (+Render production)"
+        "User-Agent": "DriveCost/3.1.5 (+Render production)"
       },
       body: soapRequestBody(operation, language),
       signal: controller.signal
@@ -362,16 +593,76 @@ async function getFuelPrices(force = false) {
 
   upstreamRequestInFlight = (async () => {
     try {
-      const parsed = await fetchFromPtt();
+      const [orSettled, bangchakSettled] = await Promise.allSettled([
+        fetchFromPtt(),
+        requestBangchakJson()
+      ]);
+
+      const orResult =
+        orSettled.status === "fulfilled"
+          ? orSettled.value
+          : null;
+      const bangchakResult =
+        bangchakSettled.status === "fulfilled"
+          ? bangchakSettled.value
+          : null;
+
+      if (!orResult && !bangchakResult) {
+        throw new Error(
+          `อ่านราคาจาก OR และ Bangchak ไม่สำเร็จ — ` +
+          `${orSettled.reason?.message || "OR unavailable"} | ` +
+          `${bangchakSettled.reason?.message || "Bangchak unavailable"}`
+        );
+      }
+
+      const merged = mergeOfficialPrices(orResult, bangchakResult);
+      const providers = [];
+      if (orResult) providers.push("PTT OR");
+      if (bangchakResult) providers.push("Bangchak");
+
+      const warnings = [];
+      if (!orResult) warnings.push(`OR: ${orSettled.reason?.message || "unavailable"}`);
+      if (!bangchakResult) {
+        warnings.push(`Bangchak: ${bangchakSettled.reason?.message || "unavailable"}`);
+      }
+
       const payload = {
-        provider: "PTT OR OilPrice Web Service",
-        sourceUrl: UPSTREAM,
+        provider: `${providers.join(" + ")} Official Price Services`,
+        sourceUrl: "/api/fuel-prices",
+        sources: [
+          orResult ? {
+            id: "or",
+            label: "PTT OR",
+            url: UPSTREAM,
+            ok: true
+          } : {
+            id: "or",
+            label: "PTT OR",
+            url: UPSTREAM,
+            ok: false
+          },
+          bangchakResult ? {
+            id: "bangchak",
+            label: "Bangchak",
+            url: BANGCHAK_UPSTREAM,
+            ok: true
+          } : {
+            id: "bangchak",
+            label: "Bangchak",
+            url: BANGCHAK_UPSTREAM,
+            ok: false
+          }
+        ],
         fetchedAt: new Date().toISOString(),
-        effectiveAt: parsed.effectiveAt,
+        effectiveAt: merged.effectiveAt,
         stale: false,
-        prices: parsed.prices,
-        disclaimer: "ราคาขายปลีกอ้างอิงจากผู้ให้บริการ อาจแตกต่างตามพื้นที่ ภาษีท้องถิ่น และสถานีบริการ"
+        prices: merged.prices,
+        disclaimer:
+          "ราคาขายปลีกอ้างอิงจากผู้ให้บริการแต่ละราย " +
+          "อาจแตกต่างตามพื้นที่ ภาษีท้องถิ่น และสถานีบริการ",
+        warning: warnings.length ? warnings.join(" | ") : null
       };
+
       memoryCache = { cachedAt: Date.now(), payload };
       return { ...payload, cache: force ? "refresh" : "miss" };
     } catch (error) {
@@ -406,7 +697,10 @@ function getFuelStatus() {
       ? Date.now() - memoryCache.cachedAt > CACHE_TTL_MS
       : null,
     inFlight: Boolean(upstreamRequestInFlight),
-    upstream: UPSTREAM
+    upstreams: {
+      or: UPSTREAM,
+      bangchak: BANGCHAK_UPSTREAM
+    }
   };
 }
 
@@ -414,5 +708,8 @@ module.exports = {
   getFuelPrices,
   getFuelStatus,
   parseSoapResponse,
+  parseBangchakResponse,
+  mergeOfficialPrices,
+  isoFromThaiEffectiveRemark,
   normalizeProductId
 };

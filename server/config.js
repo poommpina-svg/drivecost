@@ -1,6 +1,6 @@
 "use strict";
 
-const APP_VERSION = "3.1.4";
+const APP_VERSION = "3.1.5";
 
 function text(name, fallback = "") {
   return String(process.env[name] ?? fallback).trim();
@@ -70,6 +70,9 @@ const config = Object.freeze({
   fuelUpstream:
     normalizedUrl(text("FUEL_PRICE_UPSTREAM")) ||
     "https://orapiweb.pttor.com/oilservice/OilPrice.asmx",
+  bangchakFuelUpstream:
+    normalizedUrl(text("BANGCHAK_FUEL_PRICE_UPSTREAM")) ||
+    "https://oil-price.bangchak.co.th/ApiOilPrice2/th",
   fuelCacheTtlMs: integer("FUEL_CACHE_TTL_MS", 15 * 60 * 1000, 60000, 86400000),
   fuelStaleTtlMs: integer("FUEL_STALE_TTL_MS", 24 * 60 * 60 * 1000, 60000, 604800000),
 
