@@ -22,32 +22,53 @@
 
   const selectionMap = {
     "เบนซิน 95": ["gasoline95"],
+    "เบนซิน 91": ["gasoline91"],
     "แก๊สโซฮอล์ 95": ["gasohol95", "premiumGasohol95"],
+    "แก๊สโซฮอล์ 91": ["gasohol91"],
+    "แก๊สโซฮอล์ E20": ["gasoholE20"],
+    "แก๊สโซฮอล์ E85": ["gasoholE85"],
     "E20": ["gasoholE20"],
     "E85": ["gasoholE85"],
+    "ดีเซล": ["diesel"],
     "ดีเซล B7": ["dieselB7", "diesel"],
-    "ดีเซล B10": ["dieselB10", "dieselB7", "diesel"],
-    "ดีเซลพรีเมียม": ["premiumDiesel", "dieselB7", "diesel"],
+    "ดีเซล B10": ["dieselB10"],
+    "ดีเซล B20": ["dieselB20"],
+    "ดีเซลพรีเมียม": ["premiumDiesel"],
     "NGV": ["ngv"],
-    "ไฮบริด เบนซิน": ["gasohol95", "gasoline95"],
-    "Plug-in Hybrid": ["gasohol95", "gasoline95"]
+    "Plug-in Hybrid": ["gasohol95", "gasoholE20", "gasoline95"]
   };
 
   const productTarget = {
     gasoline95: { mode: "fuel", type: "เบนซิน 95" },
-    gasoline91: { mode: "fuel", type: "เบนซิน 95" },
+    gasoline91: { mode: "fuel", type: "เบนซิน 91" },
     gasohol95: { mode: "fuel", type: "แก๊สโซฮอล์ 95" },
     premiumGasohol95: { mode: "fuel", type: "แก๊สโซฮอล์ 95" },
-    gasohol91: { mode: "fuel", type: "แก๊สโซฮอล์ 95" },
-    gasoholE20: { mode: "fuel", type: "E20" },
-    gasoholE85: { mode: "fuel", type: "E85" },
-    diesel: { mode: "diesel", type: "ดีเซล B7" },
+    gasohol91: { mode: "fuel", type: "แก๊สโซฮอล์ 91" },
+    gasoholE20: { mode: "fuel", type: "แก๊สโซฮอล์ E20" },
+    gasoholE85: { mode: "fuel", type: "แก๊สโซฮอล์ E85" },
+    diesel: { mode: "diesel", type: "ดีเซล" },
     dieselB7: { mode: "diesel", type: "ดีเซล B7" },
     dieselB10: { mode: "diesel", type: "ดีเซล B10" },
-    dieselB20: { mode: "diesel", type: "ดีเซล B10" },
+    dieselB20: { mode: "diesel", type: "ดีเซล B20" },
     premiumDiesel: { mode: "diesel", type: "ดีเซลพรีเมียม" },
     ngv: { mode: "ngv", type: "NGV" }
   };
+
+  function normalizedSelection(value) {
+    return core.normalizeEnergyType
+      ? core.normalizeEnergyType(value)
+      : String(value || "").trim();
+  }
+
+  function modeAcceptsProduct(mode, targetMode) {
+    return mode === targetMode || (mode === "hybrid" && targetMode === "fuel");
+  }
+
+  function targetTypeForMode(target, mode) {
+    if (!target) return "";
+    if (mode === "hybrid" && target.mode === "fuel") return target.type;
+    return target.type;
+  }
 
   let payload = null;
   let refreshPromise = null;
@@ -196,17 +217,19 @@
   function currentSelectionProduct() {
     if (!payload) return null;
 
-    const selection = $("energyType")?.value || "";
+    const selection = normalizedSelection($("energyType")?.value || "");
     const explicitId = selectedProductId || storedProductIdForMode(core.mode);
 
     if (explicitId) {
       const explicitItem = payload.prices.find(item => item.id === explicitId);
       const target = productTarget[explicitId];
+      const targetType = targetTypeForMode(target, core.mode);
 
       if (
         explicitItem &&
-        target?.mode === core.mode &&
-        (!selection || target.type === selection)
+        target &&
+        modeAcceptsProduct(core.mode, target.mode) &&
+        (!selection || targetType === selection)
       ) {
         return explicitItem;
       }
@@ -214,6 +237,8 @@
 
     const candidates = selectionMap[selection] || [];
     for (const id of candidates) {
+      const target = productTarget[id];
+      if (!target || !modeAcceptsProduct(core.mode, target.mode)) continue;
       const found = payload.prices.find(item => item.id === id);
       if (found) return found;
     }
@@ -221,7 +246,60 @@
     return null;
   }
 
+  function restoreStoredProductSelection() {
+    if (!payload) return null;
+
+    const storedId = storedProductIdForMode(core.mode);
+    const target = productTarget[storedId];
+    const item = payload.prices.find(price => price.id === storedId);
+
+    if (!storedId || !target || !item || !modeAcceptsProduct(core.mode, target.mode)) {
+      selectedProductId = "";
+      return null;
+    }
+
+    const targetType = targetTypeForMode(target, core.mode);
+    const energyType = $("energyType");
+
+    if (
+      energyType &&
+      [...energyType.options].some(option => option.value === targetType)
+    ) {
+      energyType.value = targetType;
+    }
+
+    selectedProductId = storedId;
+    return item;
+  }
+
+  function renderEnergySelectionSummary() {
+    const name = $("energySelectionName");
+    const price = $("energySelectionPrice");
+    const unit = $("energySelectionUnit");
+    const source = $("energySelectionSource");
+
+    if (!name || !price || !unit || !source) return;
+
+    const selection = normalizedSelection($("energyType")?.value || "");
+    const selected = currentSelectionProduct();
+    const metadata = parse(storageGet(META_KEY), {})?.[core.mode] || {};
+    const numericPrice = Number.parseFloat($("energyPrice")?.value);
+
+    name.textContent = selection || core.energyData[core.mode]?.name || "พลังงาน";
+    price.textContent = fmt(Number.isFinite(numericPrice) ? numericPrice : 0, 2);
+    unit.textContent = core.energyData[core.mode]?.priceUnit || "บาท/หน่วย";
+
+    if (selected) {
+      source.textContent = `${selected.label} • ${payload?.provider || "แหล่งราคาพลังงาน"}`;
+    } else if (metadata.sourceName) {
+      source.textContent = metadata.sourceName;
+    } else {
+      source.textContent = "ราคาที่ผู้ใช้กำหนดหรือข้อมูลตัวอย่าง";
+    }
+  }
+
   function updateLivePriceSelection() {
+    renderEnergySelectionSummary();
     const grid = $("livePriceGrid");
     if (!grid || !payload) return;
 
@@ -251,8 +329,13 @@
     if (!grid || !payload) return;
 
     const selected = currentSelectionProduct();
+    const orderedPrices = [...payload.prices].sort((left, right) => {
+      if (left.id === selected?.id) return -1;
+      if (right.id === selected?.id) return 1;
+      return left.label.localeCompare(right.label, "th");
+    });
 
-    grid.innerHTML = payload.prices.map(item => {
+    grid.innerHTML = orderedPrices.map(item => {
       const unit = item.unit === "THB/KG" ? "บาท/กก." : "บาท/ลิตร";
       const active = selected?.id === item.id;
 
@@ -288,17 +371,26 @@
         updateLivePriceSelection();
 
         try {
-          if (core.mode !== target.mode) {
-            core.setMode(target.mode, false);
+          const destinationMode =
+            core.mode === "hybrid" && target.mode === "fuel"
+              ? "hybrid"
+              : target.mode;
+
+          if (core.mode !== destinationMode) {
+            core.setMode(destinationMode, false);
           }
 
+          const targetType = targetTypeForMode(target, destinationMode);
           const energyType = $("energyType");
-          if ([...energyType.options].some(option => option.value === target.type)) {
-            energyType.value = target.type;
+          if (
+            energyType &&
+            [...energyType.options].some(option => option.value === targetType)
+          ) {
+            energyType.value = targetType;
           }
 
           applyProduct(item, {
-            mode: target.mode,
+            mode: destinationMode,
             switchMode: false,
             manual: true
           });
@@ -383,10 +475,19 @@
     const mode = options.mode || target?.mode || core.mode;
 
     if (options.switchMode && target) {
-      core.setMode(target.mode, false);
+      const destinationMode =
+        core.mode === "hybrid" && target.mode === "fuel"
+          ? "hybrid"
+          : target.mode;
+      core.setMode(destinationMode, false);
+
+      const targetType = targetTypeForMode(target, destinationMode);
       const energyType = $("energyType");
-      if ([...energyType.options].some(option => option.value === target.type)) {
-        energyType.value = target.type;
+      if (
+        energyType &&
+        [...energyType.options].some(option => option.value === targetType)
+      ) {
+        energyType.value = targetType;
       }
     }
 
@@ -401,6 +502,8 @@
     }));
 
     window.DriveCostProvenance?.updateCurrentPriceSource();
+    renderEnergySelectionSummary();
+    updateLivePriceSelection();
     if ($("page-energy")?.classList.contains("active")) {
       window.DriveCostPriceData?.renderPrices();
     }
@@ -491,6 +594,7 @@
         payload = validatePayload(data);
         cachePayload(payload);
         renderMetadata(payload.stale ? "stale" : "live");
+        restoreStoredProductSelection();
         applyCurrentSelection({ force: true });
 
         showToast(payload.stale ? "ใช้ราคาที่แคชไว้ล่าสุด" : "อัปเดตราคาน้ำมันแล้ว");
@@ -501,6 +605,7 @@
         if (cached) {
           payload = { ...cached.payload, stale: true };
           renderMetadata("cached");
+          restoreStoredProductSelection();
           applyCurrentSelection({ force: true });
           setStatus(`${error.message} • ใช้ราคาที่บันทึกไว้ล่าสุด`, "cached");
           showToast("เชื่อมต่อราคาสดไม่ได้ ใช้ราคาที่แคชไว้");
@@ -533,6 +638,7 @@
     payload = cached.payload;
     const fresh = ageMs(cached.storedAt) < CLIENT_CACHE_MS;
     renderMetadata(fresh ? "cached" : "stale");
+    restoreStoredProductSelection();
     if (getSettings().auto) applyCurrentSelection({ force: true });
     return fresh;
   }
@@ -583,14 +689,21 @@
     setTimeout(() => {
       if (getSettings().auto) applyCurrentSelection({ force: true });
       renderLivePrices();
+      renderEnergySelectionSummary();
     }, 20);
+  });
+
+  $("energyPrice")?.addEventListener("input", () => {
+    renderEnergySelectionSummary();
   });
 
   window.addEventListener("drivecost:modechange", () => {
     selectedProductId = "";
     setTimeout(() => {
+      restoreStoredProductSelection();
       if (getSettings().auto) applyCurrentSelection({ force: true });
       renderLivePrices();
+      renderEnergySelectionSummary();
     }, 60);
   });
 
@@ -601,6 +714,7 @@
   // Initialization
   const settings = getSettings();
   updateAutoControls(settings.auto);
+  renderEnergySelectionSummary();
   const cacheFresh = initializeFromCache();
 
   if (settings.auto) {
@@ -617,6 +731,10 @@
   window.DriveCostLivePrices = {
     refresh: fetchLivePrices,
     applyCurrentSelection,
+    currentSelectionProduct,
+    restoreStoredProductSelection,
+    renderEnergySelectionSummary,
+    get productTarget() { return { ...productTarget }; },
     get payload() { return payload; },
     get auto() { return getSettings().auto; }
   };

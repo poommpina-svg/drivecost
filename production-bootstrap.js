@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const version = "3.1.1";
+  const version = "3.1.2";
   document.documentElement.dataset.drivecostBuild = version;
 
   window.addEventListener("load", async () => {

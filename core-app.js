@@ -28,7 +28,7 @@
   const energyData = {
     fuel: {
       name: "น้ำมันเบนซิน / แก๊สโซฮอล์",
-      types: ["E20", "แก๊สโซฮอล์ 95", "แก๊สโซฮอล์ 91", "เบนซิน 95", "E85"],
+      types: ["แก๊สโซฮอล์ E20", "แก๊สโซฮอล์ 95", "แก๊สโซฮอล์ 91", "เบนซิน 95", "เบนซิน 91", "แก๊สโซฮอล์ E85"],
       eff: 15,
       price: 31.69,
       effUnit: "กม./ลิตร",
@@ -36,7 +36,7 @@
     },
     diesel: {
       name: "ดีเซล",
-      types: ["ดีเซล B7", "ดีเซล B10", "ดีเซล B20", "ดีเซลพรีเมียม"],
+      types: ["ดีเซล B7", "ดีเซล B10", "ดีเซล B20", "ดีเซลพรีเมียม", "ดีเซล"],
       eff: 14,
       price: 33.5,
       effUnit: "กม./ลิตร",
@@ -60,7 +60,7 @@
     },
     hybrid: {
       name: "ไฮบริด",
-      types: ["ไฮบริด เบนซิน", "Plug-in Hybrid"],
+      types: ["แก๊สโซฮอล์ 95", "แก๊สโซฮอล์ E20", "เบนซิน 95", "Plug-in Hybrid"],
       eff: 22,
       price: 31.69,
       effUnit: "กม./ลิตร",
@@ -75,6 +75,26 @@
       priceUnit: "บาท/kWh"
     }
   };
+
+  const energyTypeAliases = Object.freeze({
+    "E20": "แก๊สโซฮอล์ E20",
+    "E85": "แก๊สโซฮอล์ E85",
+    "แก๊สโซฮอล์E20": "แก๊สโซฮอล์ E20",
+    "แก๊สโซฮอล์E85": "แก๊สโซฮอล์ E85",
+    "แก๊สโซฮอล์91": "แก๊สโซฮอล์ 91",
+    "แก๊สโซฮอล์95": "แก๊สโซฮอล์ 95",
+    "เบนซิน91": "เบนซิน 91",
+    "เบนซิน95": "เบนซิน 95",
+    "ดีเซลB7": "ดีเซล B7",
+    "ดีเซลB10": "ดีเซล B10",
+    "ดีเซลB20": "ดีเซล B20",
+    "ไฮบริด เบนซิน": "แก๊สโซฮอล์ 95"
+  });
+
+  function normalizeEnergyType(value) {
+    const text = String(value || "").trim();
+    return energyTypeAliases[text] || text;
+  }
 
   const inputIds = [
     "energyType", "efficiency", "energyPrice",
@@ -335,11 +355,13 @@
     });
 
     if ($("energyType")) {
-      const previousType = $("energyType").value;
+      const previousType = normalizeEnergyType($("energyType").value);
       $("energyType").innerHTML = data.types
-        .map(type => `<option>${type}</option>`)
+        .map(type => `<option value="${type}">${type}</option>`)
         .join("");
-      if (data.types.includes(previousType)) $("energyType").value = previousType;
+      if (data.types.includes(previousType)) {
+        $("energyType").value = previousType;
+      }
     }
 
     if ($("efficiency")) $("efficiency").value = data.eff;
@@ -719,7 +741,10 @@
     setCalculationMode(data.calculationMode || "estimate");
 
     if (data.energyType !== undefined && $("energyType")) {
-      $("energyType").value = data.energyType;
+      const normalizedType = normalizeEnergyType(data.energyType);
+      if ([...$("energyType").options].some(option => option.value === normalizedType)) {
+        $("energyType").value = normalizedType;
+      }
     }
 
     setTripMethod(
@@ -815,7 +840,7 @@
   function exportCSV() {
     const result = calculate();
     const rows = [
-      ["DriveCost v3.1.1", result.calculationLabel],
+      ["DriveCost v3.1.2", result.calculationLabel],
       ["รายการ", "ค่า"],
       ...result.inputs,
       ...result.breakdown.map(item => [
@@ -917,6 +942,7 @@
     get lastResult() { return lastResult; },
     vehicleData,
     energyData,
+    normalizeEnergyType,
     ids: inputIds,
     setMode,
     setVehicle,

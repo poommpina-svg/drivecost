@@ -3038,3 +3038,117 @@ body {
   clip-path:inset(50%);
   white-space:nowrap
 }
+
+
+/* ===== DriveCost v3.1.2 — Energy selection synchronization ===== */
+
+.energy-price-link{
+  margin-top:7px;
+  padding:0;
+  border:0;
+  color:#80c7ff;
+  background:transparent;
+  font-size:8px;
+  font-weight:750;
+  text-decoration:underline;
+  text-underline-offset:3px
+}
+.energy-price-link:hover,
+.energy-price-link:focus-visible{
+  color:#b8e1ff
+}
+.energy-selection-summary{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto;
+  align-items:center;
+  gap:14px;
+  margin-bottom:12px;
+  padding:13px 14px;
+  border:1px solid rgba(19,214,187,.28);
+  border-radius:13px;
+  background:linear-gradient(135deg,rgba(19,214,187,.095),rgba(47,143,255,.05))
+}
+.energy-selection-copy span,
+.energy-selection-copy strong,
+.energy-selection-copy small{
+  display:block
+}
+.energy-selection-copy span{
+  color:var(--teal);
+  font-size:8px;
+  font-weight:850;
+  letter-spacing:.06em
+}
+.energy-selection-copy strong{
+  margin-top:3px;
+  color:#effffb;
+  font-size:12px
+}
+.energy-selection-copy small{
+  margin-top:3px;
+  color:#91a9ba;
+  font-size:8px;
+  line-height:1.45
+}
+.energy-selection-value{
+  display:flex;
+  align-items:baseline;
+  gap:5px;
+  white-space:nowrap
+}
+.energy-selection-value b{
+  color:#fff;
+  font-size:21px;
+  line-height:1
+}
+.energy-selection-value span{
+  color:#99afbf;
+  font-size:8px
+}
+.price-card[data-price-card].active-category{
+  border-color:rgba(19,214,187,.38);
+  box-shadow:inset 0 0 0 1px rgba(19,214,187,.08)
+}
+
+@media(max-width:760px){
+  .mobile-nav{
+    grid-template-columns:repeat(6,minmax(0,1fr))!important
+  }
+  .mobile-nav button{
+    min-width:0;
+    display:grid;
+    place-items:center;
+    align-content:center;
+    gap:2px;
+    padding:4px 1px;
+    line-height:1.1
+  }
+  .mobile-nav button>span{
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:7px
+  }
+  .mobile-nav .plus{
+    width:40px;
+    height:40px
+  }
+  .energy-selection-summary{
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:10px
+  }
+  .energy-selection-summary>.btn{
+    grid-column:1/-1;
+    width:100%
+  }
+}
+@media(max-width:360px){
+  .mobile-nav button>span{
+    font-size:6.5px
+  }
+  .mobile-nav .plus{
+    width:36px;
+    height:36px
+  }
+}

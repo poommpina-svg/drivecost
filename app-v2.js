@@ -114,7 +114,10 @@
     if (page === "vehicles") renderVehicles();
     if (page === "compare") renderCompare();
     if (page === "history") renderHistory();
-    if (page === "energy") renderPrices();
+    if (page === "energy") {
+      renderPrices();
+      window.DriveCostLivePrices?.renderEnergySelectionSummary?.();
+    }
     if (page === "account" && window.DriveCostAccount) window.DriveCostAccount.render();
     if (page === "calculation-details" && window.DriveCostProvenance) {
       window.DriveCostProvenance.renderCalculationDetails();
@@ -313,7 +316,7 @@
         : "ยังไม่มีการแก้ไข";
 
       return `
-        <article class="price-card provenance-card" data-price-card="${key}">
+        <article class="price-card provenance-card ${key === core.mode ? "active-category" : ""}" data-price-card="${key}">
           <div class="price-card-head">
             <div>
               <strong>${escapeHtml(data.name || key.toUpperCase())}</strong>
@@ -324,7 +327,7 @@
             </span>
           </div>
 
-          <label class="provenance-label" for="price-${key}">ราคา</label>
+          <label class="provenance-label" for="price-${key}">ราคาเริ่มต้นของหมวด</label>
           <div class="field-box">
             <input id="price-${key}" type="number" min="0" step=".01"
                    value="${prices[key]}" data-price-key="${key}">
@@ -430,6 +433,7 @@
     applyStoredPrices();
     core.setMode(core.mode, false);
     renderPrices();
+    window.DriveCostLivePrices?.renderEnergySelectionSummary?.();
 
     window.dispatchEvent(new CustomEvent("drivecost:pricesourcechange", {
       detail: { mode: core.mode, metadata: metadata[core.mode] }
