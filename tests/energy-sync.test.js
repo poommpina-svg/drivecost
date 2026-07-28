@@ -53,3 +53,18 @@ test("known incorrect product mappings are absent", () => {
     /dieselB20:\s*\{\s*mode:\s*"diesel",\s*type:\s*"ดีเซล B10"\s*\}/
   );
 });
+
+
+test("live-price buttons expose deterministic selected, busy, and idle states", () => {
+  assert.match(live, /data-state="\$\{active \? "selected" : "idle"\}"/);
+  assert.match(live, /active\s*\?\s*"✓ กำลังใช้อยู่"/);
+  assert.match(live, /busy\s*\?\s*"กำลังเปลี่ยน…"/);
+  assert.match(live, /function activateProductById\(/);
+});
+
+test("manual selection is protected from delayed mode-change restoration", () => {
+  assert.match(
+    live,
+    /window\.addEventListener\("drivecost:modechange",\s*\(\)\s*=>\s*\{\s*if \(priceSelectionBusy\) return;/
+  );
+});

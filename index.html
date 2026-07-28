@@ -1,18 +1,18 @@
 <!doctype html>
 <html lang="th">
 <head>
-<script src="/storage-scope.js?v=3.1.2"></script>
+<script src="/storage-scope.js?v=3.1.3"></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#06111d">
   <meta name="description" content="DriveCost - คำนวณค่าเชื้อเพลิงจริงและเส้นทางสำหรับรถน้ำมัน ก๊าซ ไฮบริด EV และรถดัดแปลง">
-  <link rel="manifest" href="/manifest.json?v=3.1.2">
+  <link rel="manifest" href="/manifest.json?v=3.1.3">
 <meta name="application-name" content="DriveCost">
 <meta name="description" content="คำนวณค่าเดินทางและจัดเก็บข้อมูลแยกตามบัญชีอย่างปลอดภัย">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="/">
-  <title>DriveCost v3.1.2</title>
-  <link rel="stylesheet" href="/app.bundle.css?v=3.1.2">
+  <title>DriveCost v3.1.3</title>
+  <link rel="stylesheet" href="/app.bundle.css?v=3.1.3">
   
   
   
@@ -20,7 +20,7 @@
   
 
 
-<script src="/production-bootstrap.js?v=3.1.2"></script>
+<script src="/production-bootstrap.js?v=3.1.3"></script>
 
 
 
@@ -52,7 +52,7 @@
     <span class="sidebar-status-dot" aria-hidden="true"></span>
     <span>ข้อมูลเก็บในอุปกรณ์นี้</span>
   </div>
-  <div class="version">DriveCost v3.1.2</div>
+  <div class="version">DriveCost v3.1.3</div>
   </aside>
 
   <main class="content">
@@ -163,9 +163,6 @@
                 <span class="source-dot sample" aria-hidden="true"></span>
                 <span id="inlinePriceSourceText">ข้อมูลตัวอย่างของระบบ</span>
               </div>
-              <button type="button" class="energy-price-link" data-go-page="energy">
-                ดูราคาพลังงานทั้งหมด
-              </button>
             </div>
           </div>
 
@@ -735,19 +732,6 @@
         </button>
       </div>
 
-      <section class="energy-selection-summary" id="energySelectionSummary" aria-live="polite">
-        <div class="energy-selection-copy">
-          <span>กำลังใช้ในเครื่องคำนวณ</span>
-          <strong id="energySelectionName">แก๊สโซฮอล์ E20</strong>
-          <small id="energySelectionSource">รอตรวจสอบแหล่งราคา</small>
-        </div>
-        <div class="energy-selection-value">
-          <b id="energySelectionPrice">31.69</b>
-          <span id="energySelectionUnit">บาท/ลิตร</span>
-        </div>
-        <button type="button" class="btn" data-go-page="calculator">กลับไปคำนวณ</button>
-      </section>
-
       <section class="live-price-console" aria-labelledby="livePriceTitle">
         <div class="live-price-head">
           <div class="live-price-title-wrap">
@@ -1086,7 +1070,7 @@
   <button type="button" data-page="scenarios"><svg class="mobile-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 9h6M9 13h6M9 17h4"/></svg><span>สถานการณ์</span></button>
   <button type="button" class="plus" id="mobileSaveBtn"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
   <button type="button" data-page="vehicles"><svg class="mobile-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h14l1-4-2-4H6l-2 4 1 4Z"/><path d="M7 9l1-3h8l1 3M4 13h16"/><circle cx="7" cy="17" r="1.5"/><circle cx="17" cy="17" r="1.5"/></svg><span>รถของฉัน</span></button>
-  <button type="button" data-page="energy"><svg class="mobile-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16"/><path d="M5 21h13M9 7h5v4H9zM17 8h2l2 2v6a2 2 0 0 1-4 0v-3"/></svg><span>ราคา</span></button>
+  <button type="button" data-page="energy"><svg class="mobile-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h8l2 2v16H7z"/><path d="M9 7h6M10 12h4M17 9h2l2 2v5a2 2 0 0 1-4 0v-3"/></svg><span>ราคา</span></button>
   <button type="button" data-page="history"><svg class="mobile-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2M4.5 5.5 3 4"/></svg><span>ประวัติ</span></button>
 </nav>
 
@@ -1194,8 +1178,8 @@
       <div class="status-row"><span>ข้อมูลที่บันทึกในเครื่อง</span><strong id="localDataValue">0 รายการ</strong></div>
       <div class="status-row"><span>พื้นที่จัดเก็บ</span><strong id="storageStatusValue">กำลังตรวจสอบ</strong></div>
       <div class="status-row"><span>โหมดการเปิดแอพ</span><strong id="displayModeValue">เว็บเบราว์เซอร์</strong></div>
-      <div class="status-row"><span>เวอร์ชันแอพ</span><strong>2.5.3</strong></div>
-      <div class="status-row"><span>เวอร์ชันสูตรคำนวณ</span><strong>1.2.0</strong></div>
+      <div class="status-row"><span>เวอร์ชันแอพ</span><strong>3.1.3</strong></div>
+      <div class="status-row"><span>เวอร์ชันสูตรคำนวณ</span><strong>2.0.0</strong></div>
     </div>
 
     <div class="system-note">
@@ -1217,18 +1201,18 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="/drive-engine.js?v=3.1.2"></script>
-<script src="/core-app.js?v=3.1.2"></script>
+<script src="/drive-engine.js?v=3.1.3"></script>
+<script src="/core-app.js?v=3.1.3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin="anonymous"></script>
 <script src="/runtime-config.js"></script>
-<script src="/supabase-config.js?v=3.1.2"></script>
-<script src="/account-sync.js?v=3.1.2"></script>
-<script src="/app-v2.js?v=3.1.2"></script>
-<script src="/accessibility-status.js?v=3.1.2"></script>
-<script src="/provenance-calculation.js?v=3.1.2"></script>
-<script src="/live-prices.js?v=3.1.2"></script>
+<script src="/supabase-config.js?v=3.1.3"></script>
+<script src="/account-sync.js?v=3.1.3"></script>
+<script src="/app-v2.js?v=3.1.3"></script>
+<script src="/accessibility-status.js?v=3.1.3"></script>
+<script src="/provenance-calculation.js?v=3.1.3"></script>
+<script src="/live-prices.js?v=3.1.3"></script>
 
-<script src="/ui-guard.js?v=3.1.2"></script>
+<script src="/ui-guard.js?v=3.1.3"></script>
 
 
 </body>

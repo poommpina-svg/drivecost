@@ -76,6 +76,7 @@
   let lastManualRefreshAt = 0;
   let selectedProductId = "";
   let priceSelectionBusy = false;
+  let busyProductId = "";
 
   function parse(value, fallback) {
     if (!value) return fallback;
@@ -306,21 +307,40 @@
     const selected = currentSelectionProduct();
 
     grid.querySelectorAll("[data-live-card]").forEach(card => {
-      const active = selected?.id === card.dataset.liveCard;
+      const productId = card.dataset.liveCard || "";
+      const active = selected?.id === productId;
+      const busy = priceSelectionBusy && busyProductId === productId;
+      const state = active ? "selected" : busy ? "busy" : "idle";
       const button = card.querySelector("[data-use-live-price]");
 
       card.classList.toggle("active", active);
-      card.setAttribute("aria-current", active ? "true" : "false");
+      card.classList.toggle("busy", busy);
+      card.dataset.state = state;
+
+      if (active) card.setAttribute("aria-current", "true");
+      else card.removeAttribute("aria-current");
 
       if (!button) return;
 
+      button.dataset.state = state;
       button.disabled = active || priceSelectionBusy;
       button.setAttribute("aria-pressed", active ? "true" : "false");
+      button.setAttribute(
+        "aria-label",
+        active
+          ? `${card.querySelector("strong")?.textContent || "รายการนี้"} กำลังใช้อยู่`
+          : busy
+            ? "กำลังเปลี่ยนราคาพลังงาน"
+            : `ใช้ราคา ${card.querySelector("strong")?.textContent || "รายการนี้"}`
+      );
+
       button.textContent = active
-        ? "กำลังใช้อยู่"
-        : priceSelectionBusy
-          ? "กรุณารอสักครู่"
-          : "ใช้ราคานี้";
+        ? "✓ กำลังใช้อยู่"
+        : busy
+          ? "กำลังเปลี่ยน…"
+          : priceSelectionBusy
+            ? "รอสักครู่"
+            : "ใช้ราคานี้";
     });
   }
 
@@ -329,11 +349,10 @@
     if (!grid || !payload) return;
 
     const selected = currentSelectionProduct();
-    const orderedPrices = [...payload.prices].sort((left, right) => {
-      if (left.id === selected?.id) return -1;
-      if (right.id === selected?.id) return 1;
-      return left.label.localeCompare(right.label, "th");
-    });
+
+    // Keep the provider order stable. Moving a selected card while the user is
+    // pressing a button made the interface look like a second card was active.
+    const orderedPrices = [...payload.prices];
 
     grid.innerHTML = orderedPrices.map(item => {
       const unit = item.unit === "THB/KG" ? "บาท/กก." : "บาท/ลิตร";
@@ -342,64 +361,101 @@
       return `
         <article class="live-price-card ${active ? "active" : ""}"
                  data-live-card="${escapeHtml(item.id)}"
-                 aria-current="${active ? "true" : "false"}">
+                 data-state="${active ? "selected" : "idle"}"
+                 ${active ? 'aria-current="true"' : ""}>
           <small>${escapeHtml(item.product)}</small>
           <strong>${escapeHtml(item.label)}</strong>
           <b>${fmt(item.price, 2)} <span>${unit}</span></b>
           <button type="button"
                   data-use-live-price="${escapeHtml(item.id)}"
+                  data-state="${active ? "selected" : "idle"}"
                   aria-pressed="${active ? "true" : "false"}"
+                  aria-label="${active
+                    ? `${escapeHtml(item.label)} กำลังใช้อยู่`
+                    : `ใช้ราคา ${escapeHtml(item.label)}`}"
                   ${active ? "disabled" : ""}>
-            ${active ? "กำลังใช้อยู่" : "ใช้ราคานี้"}
+            ${active ? "✓ กำลังใช้อยู่" : "ใช้ราคานี้"}
           </button>
         </article>`;
     }).join("");
 
-    grid.querySelectorAll("[data-use-live-price]").forEach(button => {
-      button.addEventListener("click", () => {
-        if (priceSelectionBusy || button.disabled) return;
+    updateLivePriceSelection();
+  }
 
-        const item = payload.prices.find(price =>
-          price.id === button.dataset.useLivePrice
-        );
-        const target = item ? productTarget[item.id] : null;
+  function activateProductById(productId, triggerButton = null) {
+    if (priceSelectionBusy || !payload) return false;
 
-        if (!item || !target) return;
+    const item = payload.prices.find(price => price.id === productId);
+    const target = item ? productTarget[item.id] : null;
+    if (!item || !target) return false;
 
-        priceSelectionBusy = true;
-        selectedProductId = item.id;
-        updateLivePriceSelection();
+    const previousProductId = selectedProductId;
+    priceSelectionBusy = true;
+    busyProductId = item.id;
+    updateLivePriceSelection();
 
-        try {
-          const destinationMode =
-            core.mode === "hybrid" && target.mode === "fuel"
-              ? "hybrid"
-              : target.mode;
+    try {
+      const destinationMode =
+        core.mode === "hybrid" && target.mode === "fuel"
+          ? "hybrid"
+          : target.mode;
 
-          if (core.mode !== destinationMode) {
-            core.setMode(destinationMode, false);
-          }
+      if (core.mode !== destinationMode) {
+        core.setMode(destinationMode, false);
+      }
 
-          const targetType = targetTypeForMode(target, destinationMode);
-          const energyType = $("energyType");
-          if (
-            energyType &&
-            [...energyType.options].some(option => option.value === targetType)
-          ) {
-            energyType.value = targetType;
-          }
+      const targetType = targetTypeForMode(target, destinationMode);
+      const energyType = $("energyType");
+      if (
+        energyType &&
+        [...energyType.options].some(option => option.value === targetType)
+      ) {
+        energyType.value = targetType;
+      }
 
-          applyProduct(item, {
-            mode: destinationMode,
-            switchMode: false,
-            manual: true
-          });
-        } finally {
-          priceSelectionBusy = false;
-          updateLivePriceSelection();
-        }
+      const applied = applyProduct(item, {
+        mode: destinationMode,
+        switchMode: false,
+        manual: true
       });
-    });
+
+      if (!applied) {
+        selectedProductId = previousProductId;
+        return false;
+      }
+
+      selectedProductId = item.id;
+      window.dispatchEvent(new CustomEvent("drivecost:energyselectionchange", {
+        detail: {
+          productId: item.id,
+          mode: destinationMode,
+          energyType: targetType,
+          price: item.price
+        }
+      }));
+
+      return true;
+    } catch (error) {
+      selectedProductId = previousProductId;
+      showToast("เปลี่ยนราคาพลังงานไม่สำเร็จ");
+      console.error("Energy price selection failed", error);
+      return false;
+    } finally {
+      priceSelectionBusy = false;
+      busyProductId = "";
+      updateLivePriceSelection();
+
+      // Some mobile WebViews keep pointer focus after a tap. Removing focus
+      // prevents an idle button from looking selected after another card wins.
+      if (
+        triggerButton &&
+        triggerButton.matches(":focus") &&
+        !triggerButton.matches(":focus-visible")
+      ) {
+        triggerButton.blur();
+      }
+    }
+
   }
 
   function renderMetadata(state = "live") {
@@ -679,6 +735,12 @@
     fetchLivePrices(true).catch(() => {});
   }
 
+  $("livePriceGrid")?.addEventListener("click", event => {
+    const button = event.target.closest("[data-use-live-price]");
+    if (!button || !event.currentTarget.contains(button)) return;
+    activateProductById(button.dataset.useLivePrice || "", button);
+  });
+
   $("refreshLivePricesButton")?.addEventListener("click", manualRefresh);
   $("inlineLiveRefreshButton")?.addEventListener("click", manualRefresh);
   $("livePriceAutoToggle")?.addEventListener("change", event => setAuto(event.target.checked));
@@ -698,8 +760,11 @@
   });
 
   window.addEventListener("drivecost:modechange", () => {
+    if (priceSelectionBusy) return;
+
     selectedProductId = "";
     setTimeout(() => {
+      if (priceSelectionBusy) return;
       restoreStoredProductSelection();
       if (getSettings().auto) applyCurrentSelection({ force: true });
       renderLivePrices();
@@ -731,11 +796,14 @@
   window.DriveCostLivePrices = {
     refresh: fetchLivePrices,
     applyCurrentSelection,
+    activateProductById,
     currentSelectionProduct,
     restoreStoredProductSelection,
     renderEnergySelectionSummary,
     get productTarget() { return { ...productTarget }; },
     get payload() { return payload; },
+    get selectedProductId() { return currentSelectionProduct()?.id || ""; },
+    get busy() { return priceSelectionBusy; },
     get auto() { return getSettings().auto; }
   };
 })();

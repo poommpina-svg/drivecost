@@ -1451,8 +1451,13 @@ body.a11y-high-contrast .source-audit-card{
   font-size:8px;
   font-weight:780
 }
-.live-price-card button:hover{
-  border-color:rgba(19,214,187,.38)
+@media(hover:hover){
+  .live-price-card button[data-state="idle"]:hover{
+    border-color:rgba(148,163,184,.32);
+    background:rgba(27,48,68,.9);
+    color:#fff;
+    transform:translateY(-1px)
+  }
 }
 .live-price-card.active button{
   color:#042019;
@@ -3151,4 +3156,47 @@ body {
     width:36px;
     height:36px
   }
+}
+
+
+/* ===== DriveCost v3.1.3 — deterministic live-price button states ===== */
+
+.live-price-card{
+  transition:border-color .16s,background .16s,box-shadow .16s
+}
+.live-price-card[data-state="selected"]{
+  border-color:rgba(19,214,187,.64);
+  box-shadow:0 0 0 1px rgba(19,214,187,.14);
+  background:linear-gradient(145deg,rgba(19,214,187,.11),rgba(8,24,36,.78))
+}
+.live-price-card[data-state="busy"]{
+  border-color:rgba(89,167,255,.5);
+  background:rgba(20,43,66,.72)
+}
+.live-price-card button{
+  min-height:34px;
+  transition:background .16s,border-color .16s,color .16s,transform .16s
+}
+.live-price-card button[data-state="selected"]{
+  color:#042019;
+  border-color:transparent;
+  background:linear-gradient(90deg,var(--teal2),var(--teal));
+  opacity:1;
+  cursor:default
+}
+.live-price-card button[data-state="busy"]{
+  color:#d8ebff;
+  border-color:rgba(89,167,255,.42);
+  background:rgba(47,111,170,.2)
+}
+.live-price-card button[data-state="idle"]:disabled{
+  opacity:.58
+}
+.live-price-card button:focus:not(:focus-visible){
+  outline:none!important;
+  box-shadow:none!important
+}
+.live-price-card button[data-state="selected"]:focus-visible{
+  outline:3px solid var(--focus-color)!important;
+  outline-offset:3px!important
 }

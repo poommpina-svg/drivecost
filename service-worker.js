@@ -1,25 +1,25 @@
 "use strict";
 
-const VERSION = "3.1.2";
+const VERSION = "3.1.3";
 const STATIC_CACHE = `drivecost-static-${VERSION}`;
 const PAGE_CACHE = `drivecost-pages-${VERSION}`;
 
 const PRECACHE = [
   "/",
   "/index.html",
-  "/app.bundle.css?v=3.1.2",
-  "/storage-scope.js?v=3.1.2",
-  "/production-bootstrap.js?v=3.1.2",
-  "/drive-engine.js?v=3.1.2",
-  "/core-app.js?v=3.1.2",
-  "/supabase-config.js?v=3.1.2",
-  "/account-sync.js?v=3.1.2",
-  "/app-v2.js?v=3.1.2",
-  "/accessibility-status.js?v=3.1.2",
-  "/provenance-calculation.js?v=3.1.2",
-  "/live-prices.js?v=3.1.2",
-  "/ui-guard.js?v=3.1.2",
-  "/manifest.json?v=3.1.2",
+  "/app.bundle.css?v=3.1.3",
+  "/storage-scope.js?v=3.1.3",
+  "/production-bootstrap.js?v=3.1.3",
+  "/drive-engine.js?v=3.1.3",
+  "/core-app.js?v=3.1.3",
+  "/supabase-config.js?v=3.1.3",
+  "/account-sync.js?v=3.1.3",
+  "/app-v2.js?v=3.1.3",
+  "/accessibility-status.js?v=3.1.3",
+  "/provenance-calculation.js?v=3.1.3",
+  "/live-prices.js?v=3.1.3",
+  "/ui-guard.js?v=3.1.3",
+  "/manifest.json?v=3.1.3",
   "/assets/sedan-3d.webp",
   "/assets/suv-3d.webp",
   "/assets/pickup-3d.webp",
