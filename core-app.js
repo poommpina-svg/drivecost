@@ -28,7 +28,7 @@
   const energyData = {
     fuel: {
       name: "น้ำมันเบนซิน / แก๊สโซฮอล์",
-      types: ["แก๊สโซฮอล์ E20", "แก๊สโซฮอล์ 95", "แก๊สโซฮอล์ 91", "เบนซิน 95", "เบนซิน 91", "แก๊สโซฮอล์ E85"],
+      types: ["แก๊สโซฮอล์ E20", "แก๊สโซฮอล์ 95", "แก๊สโซฮอล์ 91", "เบนซิน 95", "แก๊สโซฮอล์ E85"],
       eff: 15,
       price: 31.69,
       effUnit: "กม./ลิตร",
@@ -742,8 +742,14 @@
 
     if (data.energyType !== undefined && $("energyType")) {
       const normalizedType = normalizeEnergyType(data.energyType);
-      if ([...$("energyType").options].some(option => option.value === normalizedType)) {
+      const options = [...$("energyType").options];
+
+      if (options.some(option => option.value === normalizedType)) {
         $("energyType").value = normalizedType;
+      } else if (normalizedType === "เบนซิน 91") {
+        // The current OR catalog does not provide Benzine 91.
+        // Never borrow a Gasohol 91 or Benzine 95 price silently.
+        toast("เบนซิน 91 ไม่มีราคาสดจาก OR กรุณาเลือกชนิดน้ำมันใหม่");
       }
     }
 

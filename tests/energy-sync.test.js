@@ -68,3 +68,28 @@ test("manual selection is protected from delayed mode-change restoration", () =>
     /window\.addEventListener\("drivecost:modechange",\s*\(\)\s*=>\s*\{\s*if \(priceSelectionBusy\) return;/
   );
 });
+
+
+test("selected live-price button has only one checkmark source", () => {
+  const css = fs.readFileSync(path.join(root, "app.bundle.css"), "utf8");
+  assert.match(live, /active\s*\?\s*"✓ กำลังใช้อยู่"/);
+  assert.doesNotMatch(
+    css,
+    /button\[aria-pressed="true"\]::before[\s\S]*content:"✓"/
+  );
+});
+
+test("gasohol and benzine labels are explicitly different", () => {
+  assert.match(live, /แก๊สโซฮอล์ 91 \(E10\)/);
+  assert.match(live, /แก๊สโซฮอล์ 95 \(E10\)/);
+  assert.match(live, /เบนซิน 95 \(ไม่มีเอทานอล\)/);
+});
+
+test("normal catalog does not offer unsupported Benzine 91", () => {
+  const fuelCatalog = core.match(/fuel:\s*\{[\s\S]*?types:\s*\[([^\]]+)\]/)?.[1] || "";
+  assert.doesNotMatch(fuelCatalog, /"เบนซิน 91"/);
+});
+
+test("legacy Benzine 91 cannot borrow a Gasohol 91 price", () => {
+  assert.match(live, /"เบนซิน 91":\s*\[\]/);
+});

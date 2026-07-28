@@ -22,7 +22,7 @@
 
   const selectionMap = {
     "เบนซิน 95": ["gasoline95"],
-    "เบนซิน 91": ["gasoline91"],
+    "เบนซิน 91": [],
     "แก๊สโซฮอล์ 95": ["gasohol95", "premiumGasohol95"],
     "แก๊สโซฮอล์ 91": ["gasohol91"],
     "แก๊สโซฮอล์ E20": ["gasoholE20"],
@@ -68,6 +68,28 @@
     if (!target) return "";
     if (mode === "hybrid" && target.mode === "fuel") return target.type;
     return target.type;
+  }
+
+
+  function displayProductLabel(item) {
+    if (!item) return "";
+    if (item.id === "gasohol91") return "แก๊สโซฮอล์ 91 (E10)";
+    if (item.id === "gasohol95") return "แก๊สโซฮอล์ 95 (E10)";
+    if (item.id === "premiumGasohol95") return "แก๊สโซฮอล์ 95 พรีเมียม (E10)";
+    if (item.id === "gasoholE20") return "แก๊สโซฮอล์ E20";
+    if (item.id === "gasoholE85") return "แก๊สโซฮอล์ E85";
+    if (item.id === "gasoline95") return "เบนซิน 95 (ไม่มีเอทานอล)";
+    if (item.id === "gasoline91") return "เบนซิน 91 (ไม่มีราคาสด)";
+    return item.label || item.product || item.id;
+  }
+
+  function productFamily(item) {
+    if (!item) return "";
+    if (item.id.startsWith("gasohol")) return "แก๊สโซฮอล์";
+    if (item.id.startsWith("gasoline")) return "เบนซิน";
+    if (item.id.toLowerCase().includes("diesel")) return "ดีเซล";
+    if (item.id === "ngv") return "ก๊าซธรรมชาติ";
+    return "พลังงาน";
   }
 
   let payload = null;
@@ -291,7 +313,7 @@
     unit.textContent = core.energyData[core.mode]?.priceUnit || "บาท/หน่วย";
 
     if (selected) {
-      source.textContent = `${selected.label} • ${payload?.provider || "แหล่งราคาพลังงาน"}`;
+      source.textContent = `${displayProductLabel(selected)} • ${payload?.provider || "แหล่งราคาพลังงาน"}`;
     } else if (metadata.sourceName) {
       source.textContent = metadata.sourceName;
     } else {
@@ -363,8 +385,9 @@
                  data-live-card="${escapeHtml(item.id)}"
                  data-state="${active ? "selected" : "idle"}"
                  ${active ? 'aria-current="true"' : ""}>
-          <small>${escapeHtml(item.product)}</small>
-          <strong>${escapeHtml(item.label)}</strong>
+          <small class="fuel-family">${escapeHtml(productFamily(item))}</small>
+          <strong>${escapeHtml(displayProductLabel(item))}</strong>
+          <span class="fuel-raw-name">${escapeHtml(item.product)}</span>
           <b>${fmt(item.price, 2)} <span>${unit}</span></b>
           <button type="button"
                   data-use-live-price="${escapeHtml(item.id)}"
@@ -565,8 +588,8 @@
     }
 
     if (options.manual) {
-      showToast(`ใช้ราคา ${item.label} ${fmt(item.price, 2)} บาทแล้ว`);
-      announce(`อัปเดตราคา ${item.label} เป็น ${fmt(item.price, 2)} บาทต่อหน่วยแล้ว`);
+      showToast(`ใช้ราคา ${displayProductLabel(item)} ${fmt(item.price, 2)} บาทแล้ว`);
+      announce(`อัปเดตราคา ${displayProductLabel(item)} เป็น ${fmt(item.price, 2)} บาทต่อหน่วยแล้ว`);
     }
 
     return true;
@@ -797,6 +820,8 @@
     refresh: fetchLivePrices,
     applyCurrentSelection,
     activateProductById,
+    displayProductLabel,
+    productFamily,
     currentSelectionProduct,
     restoreStoredProductSelection,
     renderEnergySelectionSummary,
